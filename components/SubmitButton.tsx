@@ -1,11 +1,15 @@
 "use client";
 
-import { Loader2Icon } from "lucide-react";
 import { useFormStatus } from "react-dom";
+import { Loader2Icon } from "lucide-react";
 
 import { Button } from "./ui/button";
 
-export function SubmitButton() {
+interface SubmitButtonProps {
+  text?: string;
+}
+
+export function SubmitButton({ text = "Submit" }: SubmitButtonProps) {
   const { pending } = useFormStatus();
 
   return (
@@ -16,7 +20,7 @@ export function SubmitButton() {
         </Button>
       ) : (
         <Button type="submit" className="w-full">
-          Submit
+          {text}
         </Button>
       )}
     </>

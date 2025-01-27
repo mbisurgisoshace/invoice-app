@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 import { MenuIcon, User2Icon } from "lucide-react";
 
 import Logo from "@/public/logo.png";
@@ -16,8 +17,26 @@ import { Button } from "@/components/ui/button";
 import { SidebarLinks } from "@/components/SidebarLinks";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
+import { prisma } from "../utils/db";
 import { signOut } from "../utils/auth";
 import { requireUser } from "../utils/hooks";
+
+async function getUser(userId: string) {
+  const data = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      firstName: true,
+      lastName: true,
+      address: true,
+    },
+  });
+
+  if (!data?.firstName || !data?.lastName || !data?.address) {
+    redirect("/onboarding");
+  }
+}
 
 export default async function DashboardLayout({
   children,
@@ -25,6 +44,7 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await requireUser();
+  const data = await getUser(session.user?.id as string);
 
   return (
     <>
