@@ -33,8 +33,6 @@ export async function InvoiceTable() {
     },
   });
 
-  console.log("data", data);
-
   return (
     <Table>
       <TableHeader>
