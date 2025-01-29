@@ -2,7 +2,7 @@
 
 import { CalendarIcon } from "lucide-react";
 import { useForm } from "@conform-to/react";
-import { useActionState, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { parseWithZod } from "@conform-to/zod";
 
 import {
@@ -36,6 +36,24 @@ export function CreateInvoiceForm() {
     shouldRevalidate: "onInput",
   });
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [currency, setSelectedCurrency] = useState<"USD" | "EUR">("USD");
+
+  const amount = useMemo(() => {
+    if (fields.invoiceItemQuantity.value && fields.invoiceItemRate.value)
+      return (
+        parseFloat(fields.invoiceItemQuantity.value) *
+        parseFloat(fields.invoiceItemRate.value)
+      );
+
+    return 0;
+  }, [fields.invoiceItemQuantity.value, fields.invoiceItemRate.value]);
+
+  function formatCurrency(amount: number, currency: "USD" | "EUR") {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+    }).format(amount);
+  }
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
@@ -61,13 +79,29 @@ export function CreateInvoiceForm() {
                 <span className="px-3 border border-r-0 rounded-l-md bg-muted flex items-center">
                   #
                 </span>
-                <Input placeholder="5" className="rounded-l-none" />
+                <Input
+                  placeholder="5"
+                  className="rounded-l-none"
+                  key={fields.invoiceNumber.key}
+                  name={fields.invoiceNumber.name}
+                  defaultValue={fields.invoiceNumber.initialValue}
+                />
               </div>
+              <p className="text-red-500 text-sm">
+                {fields.invoiceNumber.errors}
+              </p>
             </div>
 
             <div>
               <Label>Currency</Label>
-              <Select defaultValue="USD">
+              <Select
+                defaultValue="USD"
+                value={currency}
+                key={fields.currency.key}
+                name={fields.currency.name}
+                //@ts-ignore
+                onValueChange={setSelectedCurrency}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select Currency" />
                 </SelectTrigger>
@@ -78,6 +112,7 @@ export function CreateInvoiceForm() {
                   <SelectItem value="EUR">Euro -- EUR</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-red-500 text-sm">{fields.currency.errors}</p>
             </div>
           </div>
 
@@ -85,18 +120,61 @@ export function CreateInvoiceForm() {
             <div>
               <Label>From</Label>
               <div className="space-y-2">
-                <Input placeholder="Your Name" />
-                <Input placeholder="Your Email" />
-                <Input placeholder="Your Address" />
+                <Input
+                  placeholder="Your Name"
+                  key={fields.fromName.key}
+                  name={fields.fromName.name}
+                />
+                <p className="text-red-500 text-sm">{fields.fromName.errors}</p>
+                <Input
+                  placeholder="Your Email"
+                  key={fields.fromEmail.key}
+                  name={fields.fromEmail.name}
+                />
+                <p className="text-red-500 text-sm">
+                  {fields.fromEmail.errors}
+                </p>
+                <Input
+                  placeholder="Your Address"
+                  key={fields.fromAddress.key}
+                  name={fields.fromAddress.name}
+                />
+                <p className="text-red-500 text-sm">
+                  {fields.fromAddress.errors}
+                </p>
               </div>
             </div>
 
             <div>
               <Label>To</Label>
               <div className="space-y-2">
-                <Input placeholder="Client Name" />
-                <Input placeholder="Client Email" />
-                <Input placeholder="Client Address" />
+                <Input
+                  placeholder="Client Name"
+                  key={fields.clientName.key}
+                  name={fields.clientName.name}
+                  defaultValue={fields.clientName.initialValue}
+                />
+                <p className="text-red-500 text-sm">
+                  {fields.clientName.errors}
+                </p>
+                <Input
+                  placeholder="Client Email"
+                  key={fields.clientEmail.key}
+                  name={fields.clientEmail.name}
+                  defaultValue={fields.clientEmail.initialValue}
+                />
+                <p className="text-red-500 text-sm">
+                  {fields.clientEmail.errors}
+                </p>
+                <Input
+                  placeholder="Client Address"
+                  key={fields.clientAddress.key}
+                  name={fields.clientAddress.name}
+                  defaultValue={fields.clientAddress.initialValue}
+                />
+                <p className="text-red-500 text-sm">
+                  {fields.clientAddress.errors}
+                </p>
               </div>
             </div>
           </div>
@@ -132,11 +210,22 @@ export function CreateInvoiceForm() {
                   />
                 </PopoverContent>
               </Popover>
+              <input
+                type="hidden"
+                name={fields.date.name}
+                key={fields.date.key}
+                value={selectedDate.toISOString()}
+              />
+              <p className="text-red-500 text-sm">{fields.date.errors}</p>
             </div>
 
             <div>
               <Label>Invoice Due</Label>
-              <Select>
+              <Select
+                key={fields.dueDate.key}
+                name={fields.dueDate.name}
+                defaultValue={fields.dueDate.initialValue}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select due date" />
                 </SelectTrigger>
@@ -146,6 +235,7 @@ export function CreateInvoiceForm() {
                   <SelectItem value="30">Net 30</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-red-500 text-sm">{fields.dueDate.errors}</p>
             </div>
           </div>
 
@@ -159,16 +249,45 @@ export function CreateInvoiceForm() {
 
             <div className="grid grid-cols-12 gap-4 mb-4">
               <div className="col-span-6">
-                <Textarea placeholder="Item name & description" />
+                <Textarea
+                  placeholder="Item name & description"
+                  key={fields.invoiceItemDescription.key}
+                  name={fields.invoiceItemDescription.name}
+                  defaultValue={fields.invoiceItemDescription.initialValue}
+                />
+                <p className="text-red-500 text-sm">
+                  {fields.invoiceItemDescription.errors}
+                </p>
               </div>
               <div className="col-span-2">
-                <Input type="number" placeholder="0" />
+                <Input
+                  type="number"
+                  placeholder="0"
+                  key={fields.invoiceItemQuantity.key}
+                  name={fields.invoiceItemQuantity.name}
+                />
+                <p className="text-red-500 text-sm">
+                  {fields.invoiceItemQuantity.errors}
+                </p>
               </div>
               <div className="col-span-2">
-                <Input type="number" placeholder="0" />
+                <Input
+                  type="number"
+                  placeholder="0"
+                  key={fields.invoiceItemRate.key}
+                  name={fields.invoiceItemRate.name}
+                />
+                <p className="text-red-500 text-sm">
+                  {fields.invoiceItemRate.errors}
+                </p>
               </div>
               <div className="col-span-2">
-                <Input disabled type="number" placeholder="0" />
+                <Input
+                  disabled
+                  placeholder="0"
+                  onChange={() => {}}
+                  value={formatCurrency(amount, currency)}
+                />
               </div>
             </div>
           </div>
@@ -177,19 +296,28 @@ export function CreateInvoiceForm() {
             <div className="w-1/3">
               <div className="flex justify-between py-2">
                 <span>Subtotal</span>
-                <span>$5.00</span>
+                <span>{formatCurrency(amount, currency)}</span>
               </div>
 
               <div className="flex justify-between py-2 border-t">
-                <span>Total (USD)</span>
-                <span className="font-bold">$5.00</span>
+                <span>{`Total (${currency})`}</span>
+                <span className="font-bold">
+                  {formatCurrency(amount, currency)}
+                </span>
+                <input type="hidden" name={fields.total.name} value={amount} />
               </div>
             </div>
           </div>
 
           <div>
             <Label>Note</Label>
-            <Textarea placeholder="Add your Note/s right here..." />
+            <Textarea
+              key={fields.note.key}
+              name={fields.note.name}
+              defaultValue={fields.note.initialValue}
+              placeholder="Add your Note/s right here..."
+            />
+            <p className="text-red-500 text-sm">{fields.note.errors}</p>
           </div>
 
           <div className="flex items-center justify-end mt-6">
