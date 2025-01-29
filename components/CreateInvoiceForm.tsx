@@ -24,6 +24,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 import { createInvoice } from "@/app/actions/actions";
 import { createInvoiceSchema } from "@/app/utils/schemas";
+import { formatCurrency } from "@/app/utils/utils";
 
 export function CreateInvoiceForm() {
   const [lastResult, action] = useActionState(createInvoice, undefined);
@@ -47,13 +48,6 @@ export function CreateInvoiceForm() {
 
     return 0;
   }, [fields.invoiceItemQuantity.value, fields.invoiceItemRate.value]);
-
-  function formatCurrency(amount: number, currency: "USD" | "EUR") {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-    }).format(amount);
-  }
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
