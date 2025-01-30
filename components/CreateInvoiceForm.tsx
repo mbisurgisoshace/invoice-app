@@ -26,7 +26,19 @@ import { createInvoice } from "@/app/actions/actions";
 import { createInvoiceSchema } from "@/app/utils/schemas";
 import { formatCurrency } from "@/app/utils/utils";
 
-export function CreateInvoiceForm() {
+interface CreateInvoiceFormProps {
+  firstName: string;
+  lastName: string;
+  address: string;
+  email: string;
+}
+
+export function CreateInvoiceForm({
+  firstName,
+  lastName,
+  address,
+  email,
+}: CreateInvoiceFormProps) {
   const [lastResult, action] = useActionState(createInvoice, undefined);
   const [form, fields] = useForm({
     lastResult,
@@ -118,12 +130,14 @@ export function CreateInvoiceForm() {
                   placeholder="Your Name"
                   key={fields.fromName.key}
                   name={fields.fromName.name}
+                  defaultValue={`${firstName} ${lastName}`}
                 />
                 <p className="text-red-500 text-sm">{fields.fromName.errors}</p>
                 <Input
                   placeholder="Your Email"
                   key={fields.fromEmail.key}
                   name={fields.fromEmail.name}
+                  defaultValue={email}
                 />
                 <p className="text-red-500 text-sm">
                   {fields.fromEmail.errors}
@@ -132,6 +146,7 @@ export function CreateInvoiceForm() {
                   placeholder="Your Address"
                   key={fields.fromAddress.key}
                   name={fields.fromAddress.name}
+                  defaultValue={address}
                 />
                 <p className="text-red-500 text-sm">
                   {fields.fromAddress.errors}
