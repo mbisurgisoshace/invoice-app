@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { MenuIcon, User2Icon } from "lucide-react";
 
 import Logo from "@/public/logo.png";
+import { Toaster } from "@/components/ui/sonner";
 
 import {
   DropdownMenu,
@@ -132,6 +133,7 @@ export default async function DashboardLayout({
           </main>
         </div>
       </div>
+      <Toaster richColors closeButton />
     </>
   );
 }
