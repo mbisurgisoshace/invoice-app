@@ -73,8 +73,8 @@ export async function createInvoice(prevState: any, formData: FormData) {
 
   emailClient.send({
     from: sender,
-    to: [{ email: "maximiliano.bisurgi@gmail.com" }],
-    template_uuid: "7b5d687c-ef69-4f42-a766-d68acde418d9",
+    to: [{ email: submission.value.clientEmail }],
+    template_uuid: process.env.SEND_INVOICE_TEMPLATE_ID!,
     template_variables: {
       clientName: submission.value.clientName,
       invoiceNumber: `# ${submission.value.invoiceNumber}`,
@@ -137,8 +137,8 @@ export async function updateInvoice(prevState: any, formData: FormData) {
 
   emailClient.send({
     from: sender,
-    to: [{ email: "maximiliano.bisurgi@gmail.com" }],
-    template_uuid: "bd02ff8a-11bc-4e9d-9675-0ba46c3344bc",
+    to: [{ email: submission.value.clientEmail }],
+    template_uuid: process.env.EDIT_INVOICE_TEMPLATE_ID!,
     template_variables: {
       clientName: submission.value.clientName,
       invoiceNumber: `# ${submission.value.invoiceNumber}`,

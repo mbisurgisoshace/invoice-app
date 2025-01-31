@@ -35,7 +35,7 @@ export async function POST(
     emailClient.send({
       from: sender,
       to: [{ email: "maximiliano.bisurgi@gmail.com" }],
-      template_uuid: "d9a3011d-9489-4e6e-a28a-63936f59c955",
+      template_uuid: process.env.SEND_REMINDER_TEMPLATE_ID!,
       template_variables: {
         first_name: data.clientName,
         company_info_name: "Invoice App",
