@@ -211,6 +211,7 @@ export function EditInvoiceForm({ invoice }: EditInvoiceFormProps) {
                 </PopoverTrigger>
                 <PopoverContent>
                   <Calendar
+                    //@ts-ignore
                     mode="single"
                     selected={selectedDate}
                     onSelect={setSelectedDate}
