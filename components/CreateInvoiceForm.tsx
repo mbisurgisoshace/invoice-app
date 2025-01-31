@@ -1,7 +1,5 @@
 "use client";
 
-//@ts-nocheck
-
 import { CalendarIcon } from "lucide-react";
 import { useForm } from "@conform-to/react";
 import { useActionState, useMemo, useState } from "react";
@@ -217,7 +215,9 @@ export function CreateInvoiceForm({
                   <Calendar
                     //@ts-ignore
                     mode="single"
+                    //@ts-ignore
                     selected={selectedDate}
+                    //@ts-ignore
                     onSelect={setSelectedDate}
                   />
                 </PopoverContent>

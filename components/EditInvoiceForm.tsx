@@ -1,7 +1,5 @@
 "use client";
 
-//@ts-nocheck
-
 import { Prisma } from "@prisma/client";
 import { CalendarIcon } from "lucide-react";
 import { useForm } from "@conform-to/react";
@@ -215,7 +213,9 @@ export function EditInvoiceForm({ invoice }: EditInvoiceFormProps) {
                   <Calendar
                     //@ts-ignore
                     mode="single"
+                    //@ts-ignore
                     selected={selectedDate}
+                    //@ts-ignore
                     onSelect={setSelectedDate}
                   />
                 </PopoverContent>
