@@ -155,3 +155,32 @@ export async function updateInvoice(prevState: any, formData: FormData) {
 
   return redirect("/dashboard/invoices");
 }
+
+export async function deleteInvoice(invoiceId: string) {
+  const session = await requireUser();
+
+  const data = await prisma.invoice.delete({
+    where: {
+      id: invoiceId,
+      userId: session.user?.id,
+    },
+  });
+
+  return redirect("/dashboard/invoices");
+}
+
+export async function markInvoiceAsPaid(invoiceId: string) {
+  const session = await requireUser();
+
+  const data = await prisma.invoice.update({
+    where: {
+      id: invoiceId,
+      userId: session.user?.id,
+    },
+    data: {
+      status: "PAID",
+    },
+  });
+
+  return redirect("/dashboard/invoices");
+}
