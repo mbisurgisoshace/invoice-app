@@ -67,8 +67,8 @@ export async function createInvoice(prevState: any, formData: FormData) {
   });
 
   const sender = {
-    email: "hello@demomailtrap.com",
-    name: "Maximiliano Bisurgi",
+    email: "hello@invoicely.dev",
+    name: submission.value.fromName,
   };
 
   emailClient.send({
@@ -131,8 +131,8 @@ export async function updateInvoice(prevState: any, formData: FormData) {
   });
 
   const sender = {
-    email: "hello@demomailtrap.com",
-    name: "Maximiliano Bisurgi",
+    email: "hello@invoicely.dev",
+    name: submission.value.fromName,
   };
 
   emailClient.send({
