@@ -22,16 +22,16 @@ export async function InvoiceChart() {
     },
     select: {
       total: true,
-      createdAt: true,
+      payedDate: true,
     },
     orderBy: {
-      createdAt: "asc",
+      payedDate: "asc",
     },
   });
 
   const aggregatedData = rawData.reduce(
     (acc: { [key: string]: number }, curr) => {
-      const date = new Date(curr.createdAt).toLocaleDateString("en-US", {
+      const date = new Date(curr.payedDate!).toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
       });

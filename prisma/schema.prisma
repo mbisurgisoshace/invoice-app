@@ -94,6 +94,7 @@ model Invoice {
   status                 InvoiceStatus
   date                   DateTime
   dueDate                Int
+  payedDate              DateTime?
   fromName               String
   fromEmail              String
   fromAddress            String

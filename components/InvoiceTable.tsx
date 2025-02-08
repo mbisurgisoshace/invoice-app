@@ -21,6 +21,7 @@ export async function InvoiceTable() {
     },
     select: {
       id: true,
+      date: true,
       total: true,
       status: true,
       currency: true,
@@ -59,7 +60,7 @@ export async function InvoiceTable() {
             <TableCell>
               {new Intl.DateTimeFormat("en-US", {
                 dateStyle: "medium",
-              }).format(invoice.createdAt)}
+              }).format(invoice.date)}
             </TableCell>
             <TableCell className="text-right">
               <InvoiceTableActions

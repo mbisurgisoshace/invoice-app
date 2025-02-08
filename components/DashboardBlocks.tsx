@@ -12,6 +12,10 @@ export async function DashboardBlocks() {
     prisma.invoice.findMany({
       where: {
         userId: session.user?.id,
+        createdAt: {
+          lte: new Date(),
+          gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+        },
       },
       select: {
         total: true,
