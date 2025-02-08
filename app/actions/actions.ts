@@ -169,8 +169,13 @@ export async function deleteInvoice(invoiceId: string) {
   return redirect("/dashboard/invoices");
 }
 
-export async function markInvoiceAsPaid(invoiceId: string) {
+export async function markInvoiceAsPaid(
+  invoiceId: string,
+  paymentDate: string
+) {
   const session = await requireUser();
+
+  console.log("paymentDate", paymentDate);
 
   const data = await prisma.invoice.update({
     where: {
@@ -179,6 +184,7 @@ export async function markInvoiceAsPaid(invoiceId: string) {
     },
     data: {
       status: "PAID",
+      payedDate: paymentDate,
     },
   });
 

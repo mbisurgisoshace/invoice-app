@@ -7,9 +7,11 @@ import {
   CheckCircle,
   DownloadCloudIcon,
   MoreHorizontalIcon,
+  CalendarIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useState } from "react";
 
 import {
   DropdownMenu,
@@ -29,8 +31,9 @@ import {
   AlertDialogContent,
   AlertDialogDescription,
 } from "@/components/ui/alert-dialog";
+import { Calendar } from "./ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { deleteInvoice, markInvoiceAsPaid } from "@/app/actions/actions";
-import { useState } from "react";
 
 interface InvoiceTableActionsProps {
   status: string;
@@ -42,6 +45,7 @@ export function InvoiceTableActions({
   invoiceId,
 }: InvoiceTableActionsProps) {
   const [dialog, setDialog] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   const handleSentReminder = () => {
     toast.promise(
@@ -62,7 +66,8 @@ export function InvoiceTableActions({
   };
 
   const onMarkAsPaid = async () => {
-    await markInvoiceAsPaid(invoiceId);
+    await markInvoiceAsPaid(invoiceId, selectedDate.toISOString());
+    setSelectedDate(new Date());
   };
 
   const renderDialog = () => {
@@ -98,12 +103,44 @@ export function InvoiceTableActions({
               Are you sure you want to mark this invoice as paid?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This will mark your invoice as paid.
+              This will mark your invoice as paid. Please select the payment
+              date.
             </AlertDialogDescription>
+            <div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className="w-[280px] text-left justify-start my-2"
+                  >
+                    <CalendarIcon />
+                    {selectedDate ? (
+                      <p>
+                        {new Intl.DateTimeFormat("en-US", {
+                          dateStyle: "long",
+                        }).format(selectedDate)}
+                      </p>
+                    ) : (
+                      <span>Pick a Date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <Calendar
+                    //@ts-ignore
+                    mode="single"
+                    //@ts-ignore
+                    selected={selectedDate}
+                    //@ts-ignore
+                    onSelect={setSelectedDate}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={onMarkAsPaid}>
+            <AlertDialogAction onClick={onMarkAsPaid} disabled={!selectedDate}>
               Mark as Paid
             </AlertDialogAction>
           </AlertDialogFooter>
