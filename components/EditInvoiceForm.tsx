@@ -29,9 +29,10 @@ import { createInvoiceSchema } from "@/app/utils/schemas";
 
 interface EditInvoiceFormProps {
   invoice: Prisma.InvoiceGetPayload<{}>;
+  customers: Prisma.CustomerGetPayload<{}>[];
 }
 
-export function EditInvoiceForm({ invoice }: EditInvoiceFormProps) {
+export function EditInvoiceForm({ invoice, customers }: EditInvoiceFormProps) {
   const [lastResult, action] = useActionState(updateInvoice, undefined);
   const [form, fields] = useForm({
     lastResult,
@@ -42,11 +43,22 @@ export function EditInvoiceForm({ invoice }: EditInvoiceFormProps) {
     shouldRevalidate: "onInput",
   });
 
+  const [invoiceCode, setInvoiceCode] = useState<string>(invoice.invoiceCode);
+  const [customerName, setCustomerName] = useState<string>(invoice.clientName);
+  const [customerEmail, setCustomerEmail] = useState<string>(
+    invoice.clientEmail
+  );
+  const [customerAddress, setCustomerAddress] = useState<string>(
+    invoice.clientAddress
+  );
   const [selectedDate, setSelectedDate] = useState<Date>(
     new Date(invoice.date)
   );
   const [currency, setSelectedCurrency] = useState<"USD" | "EUR">(
     invoice.currency as any
+  );
+  const [selectedCustomer, setSelectedCustomer] = useState<string>(
+    invoice.customerId!
   );
 
   const amount = useMemo(() => {
@@ -59,11 +71,23 @@ export function EditInvoiceForm({ invoice }: EditInvoiceFormProps) {
     return 0;
   }, [fields.invoiceItemQuantity.value, fields.invoiceItemRate.value]);
 
+  const onSelectCustomer = async (customerId: string) => {
+    const customer = customers.find((customer) => customer.id === customerId)!;
+
+    setSelectedCustomer(customerId);
+
+    setCustomerName(customer.name);
+    setCustomerEmail(customer.email);
+    setCustomerAddress(customer.address);
+    setInvoiceCode(customer.invoiceCode);
+  };
+
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardContent className="p-6">
         <form id={form.id} action={action} onSubmit={form.onSubmit} noValidate>
           <input type="hidden" name="id" value={invoice.id} />
+          <input type="hidden" name="invoiceCode" value={invoiceCode} />
           <div className="flex flex-col gap-1 w-fit mb-6">
             <div className="flex items-center gap-4">
               <Badge variant={"secondary"}>Draft</Badge>
@@ -79,10 +103,35 @@ export function EditInvoiceForm({ invoice }: EditInvoiceFormProps) {
 
           <div className="grid md:grid-cols-3 gap-6 mb-6">
             <div>
+              <Label>Customer</Label>
+              <Select
+                value={selectedCustomer}
+                key={fields.customerId.key}
+                name={fields.customerId.name}
+                //@ts-ignore
+                onValueChange={onSelectCustomer}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Customer" />
+                </SelectTrigger>
+                <SelectContent>
+                  {customers.map((customer) => (
+                    <SelectItem key={customer.id} value={customer.id}>
+                      {customer.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-red-500 text-sm">{fields.customerId.errors}</p>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-6">
+            <div>
               <Label>Invoice No.</Label>
               <div className="flex">
-                <span className="px-3 border border-r-0 rounded-l-md bg-muted flex items-center">
-                  #
+                <span className="px-3 border border-r-0 rounded-l-md bg-muted flex items-center w-20">
+                  # {invoiceCode}
                 </span>
                 <Input
                   placeholder="5"
@@ -156,28 +205,31 @@ export function EditInvoiceForm({ invoice }: EditInvoiceFormProps) {
               <Label>To</Label>
               <div className="space-y-2">
                 <Input
+                  value={customerName}
                   placeholder="Client Name"
                   key={fields.clientName.key}
                   name={fields.clientName.name}
-                  defaultValue={invoice.clientName}
+                  onChange={(e) => setCustomerName(e.target.value)}
                 />
                 <p className="text-red-500 text-sm">
                   {fields.clientName.errors}
                 </p>
                 <Input
+                  value={customerEmail}
                   placeholder="Client Email"
                   key={fields.clientEmail.key}
                   name={fields.clientEmail.name}
-                  defaultValue={invoice.clientEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
                 />
                 <p className="text-red-500 text-sm">
                   {fields.clientEmail.errors}
                 </p>
                 <Input
+                  value={customerAddress}
                   placeholder="Client Address"
                   key={fields.clientAddress.key}
                   name={fields.clientAddress.name}
-                  defaultValue={invoice.clientAddress}
+                  onChange={(e) => setCustomerAddress(e.target.value)}
                 />
                 <p className="text-red-500 text-sm">
                   {fields.clientAddress.errors}

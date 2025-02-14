@@ -133,6 +133,8 @@ export async function updateInvoice(prevState: any, formData: FormData) {
       total: submission.value.total,
       note: submission.value.note,
       userId: session.user?.id,
+      invoiceCode: submission.value.invoiceCode,
+      customerId: submission.value.customerId,
     },
   });
 
