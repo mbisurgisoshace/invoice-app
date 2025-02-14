@@ -8,6 +8,7 @@ import {
   TableHeader,
 } from "./ui/table";
 import { requireUser } from "@/app/utils/hooks";
+import { CustomerTableActions } from "./CustomerTableActions";
 
 export async function CustomerTable() {
   const session = await requireUser();
@@ -48,10 +49,7 @@ export async function CustomerTable() {
             <TableCell>{customer.address}</TableCell>
             <TableCell>{customer.phoneNumber || "-"}</TableCell>
             <TableCell className="text-right">
-              {/* <InvoiceTableActions
-                invoiceId={customer.id}
-                status={customer.status}
-              /> */}
+              <CustomerTableActions customerId={customer.id} />
             </TableCell>
           </TableRow>
         ))}

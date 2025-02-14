@@ -220,3 +220,33 @@ export async function createCustomer(prevState: any, formData: FormData) {
 
   return redirect("/dashboard/customers");
 }
+
+export async function updateCustomer(prevState: any, formData: FormData) {
+  const session = await requireUser();
+
+  const submission = parseWithZod(formData, {
+    schema: createCustomerSchema,
+  });
+
+  if (submission.status !== "success") {
+    return submission.reply();
+  }
+
+  const data = await prisma.customer.update({
+    where: {
+      id: formData.get("id") as string,
+      userId: session.user?.id,
+    },
+    data: {
+      address: submission.value.address,
+      email: submission.value.email,
+      name: submission.value.name,
+      phoneNumber: submission.value.phoneNumber,
+      taxNumber: submission.value.taxNumber,
+      invoiceCode: submission.value.invoiceCode,
+      userId: session.user?.id,
+    },
+  });
+
+  return redirect("/dashboard/customers");
+}
