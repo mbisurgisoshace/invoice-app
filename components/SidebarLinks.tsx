@@ -17,13 +17,13 @@ export const SIDEBAR_LINKS = [
     id: 1,
     name: "Customers",
     href: "/dashboard/customers",
-    icon: BookTextIcon,
+    icon: Users2Icon,
   },
   {
     id: 2,
     name: "Invoices",
     href: "/dashboard/invoices",
-    icon: Users2Icon,
+    icon: BookTextIcon,
   },
 ];
 
