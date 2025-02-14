@@ -22,22 +22,27 @@ import { Card, CardContent } from "./ui/card";
 import { SubmitButton } from "./SubmitButton";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
-import { createInvoice } from "@/app/actions/actions";
+import { createInvoice, getLastInvoiceNumber } from "@/app/actions/actions";
 import { createInvoiceSchema } from "@/app/utils/schemas";
 import { formatCurrency } from "@/app/utils/utils";
+import { Prisma } from "@prisma/client";
 
 interface CreateInvoiceFormProps {
-  firstName: string;
-  lastName: string;
-  address: string;
   email: string;
+  address: string;
+  lastName: string;
+  firstName: string;
+  nextInvoiceNumber: number;
+  customers: Prisma.CustomerGetPayload<{}>[];
 }
 
 export function CreateInvoiceForm({
-  firstName,
-  lastName,
-  address,
   email,
+  address,
+  lastName,
+  firstName,
+  customers,
+  nextInvoiceNumber,
 }: CreateInvoiceFormProps) {
   const [lastResult, action] = useActionState(createInvoice, undefined);
   const [form, fields] = useForm({
@@ -48,8 +53,16 @@ export function CreateInvoiceForm({
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
   });
+
+  const [invoiceCode, setInvoiceCode] = useState<string>("");
+  const [customerName, setCustomerName] = useState<string | undefined>();
+  const [customerEmail, setCustomerEmail] = useState<string | undefined>();
+  const [customerAddress, setCustomerAddress] = useState<string | undefined>();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currency, setSelectedCurrency] = useState<"USD" | "EUR">("USD");
+  const [selectedCustomer, setSelectedCustomer] = useState<
+    string | undefined
+  >();
 
   const amount = useMemo(() => {
     if (fields.invoiceItemQuantity.value && fields.invoiceItemRate.value)
@@ -61,10 +74,22 @@ export function CreateInvoiceForm({
     return 0;
   }, [fields.invoiceItemQuantity.value, fields.invoiceItemRate.value]);
 
+  const onSelectCustomer = async (customerId: string) => {
+    const customer = customers.find((customer) => customer.id === customerId)!;
+
+    setSelectedCustomer(customerId);
+
+    setCustomerName(customer.name);
+    setCustomerEmail(customer.email);
+    setCustomerAddress(customer.address);
+    setInvoiceCode(customer.invoiceCode);
+  };
+
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardContent className="p-6">
         <form id={form.id} action={action} onSubmit={form.onSubmit} noValidate>
+          <input type="hidden" name="invoiceCode" value={invoiceCode} />
           <div className="flex flex-col gap-1 w-fit mb-6">
             <div className="flex items-center gap-4">
               <Badge variant={"secondary"}>Draft</Badge>
@@ -80,17 +105,42 @@ export function CreateInvoiceForm({
 
           <div className="grid md:grid-cols-3 gap-6 mb-6">
             <div>
+              <Label>Customer</Label>
+              <Select
+                value={selectedCustomer}
+                key={fields.customerId.key}
+                name={fields.customerId.name}
+                //@ts-ignore
+                onValueChange={onSelectCustomer}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Customer" />
+                </SelectTrigger>
+                <SelectContent>
+                  {customers.map((customer) => (
+                    <SelectItem key={customer.id} value={customer.id}>
+                      {customer.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-red-500 text-sm">{fields.customerId.errors}</p>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-6">
+            <div>
               <Label>Invoice No.</Label>
               <div className="flex">
-                <span className="px-3 border border-r-0 rounded-l-md bg-muted flex items-center">
-                  #
+                <span className="px-3 border border-r-0 rounded-l-md bg-muted flex items-center w-20">
+                  # {invoiceCode}
                 </span>
                 <Input
                   placeholder="5"
                   className="rounded-l-none"
                   key={fields.invoiceNumber.key}
                   name={fields.invoiceNumber.name}
-                  defaultValue={fields.invoiceNumber.initialValue}
+                  defaultValue={nextInvoiceNumber}
                 />
               </div>
               <p className="text-red-500 text-sm">
@@ -158,28 +208,34 @@ export function CreateInvoiceForm({
               <Label>To</Label>
               <div className="space-y-2">
                 <Input
+                  value={customerName || ""}
                   placeholder="Client Name"
                   key={fields.clientName.key}
                   name={fields.clientName.name}
                   defaultValue={fields.clientName.initialValue}
+                  onChange={(e) => setCustomerName(e.target.value)}
                 />
                 <p className="text-red-500 text-sm">
                   {fields.clientName.errors}
                 </p>
                 <Input
+                  value={customerEmail || ""}
                   placeholder="Client Email"
                   key={fields.clientEmail.key}
                   name={fields.clientEmail.name}
                   defaultValue={fields.clientEmail.initialValue}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
                 />
                 <p className="text-red-500 text-sm">
                   {fields.clientEmail.errors}
                 </p>
                 <Input
+                  value={customerAddress || ""}
                   placeholder="Client Address"
                   key={fields.clientAddress.key}
                   name={fields.clientAddress.name}
                   defaultValue={fields.clientAddress.initialValue}
+                  onChange={(e) => setCustomerAddress(e.target.value)}
                 />
                 <p className="text-red-500 text-sm">
                   {fields.clientAddress.errors}

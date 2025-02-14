@@ -13,14 +13,29 @@ export default async function Invoice({
 
   const { invoiceId } = await params;
 
-  const data = await prisma.invoice.findUnique({
-    where: {
-      id: invoiceId,
-      userId: session.user?.id,
-    },
-  });
+  const [data, customers] = await Promise.all([
+    await prisma.invoice.findUnique({
+      where: {
+        id: invoiceId,
+        userId: session.user?.id,
+      },
+    }),
+    await prisma.customer.findMany({
+      where: {
+        userId: session.user?.id,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    }),
+  ]);
 
   if (!data) return notFound();
 
-  return <EditInvoiceForm invoice={JSON.parse(JSON.stringify(data))} />;
+  return (
+    <EditInvoiceForm
+      invoice={JSON.parse(JSON.stringify(data))}
+      customers={JSON.parse(JSON.stringify(customers))}
+    />
+  );
 }

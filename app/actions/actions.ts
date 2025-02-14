@@ -6,7 +6,11 @@ import { parseWithZod } from "@conform-to/zod";
 import { prisma } from "../utils/db";
 import { requireUser } from "../utils/hooks";
 import { emailClient } from "../utils/mailtrap";
-import { createInvoiceSchema, onboardingSchema } from "../utils/schemas";
+import {
+  createCustomerSchema,
+  createInvoiceSchema,
+  onboardingSchema,
+} from "../utils/schemas";
 import { formatCurrency } from "../utils/utils";
 
 export async function onboardUser(prevState: any, formData: FormData) {
@@ -63,6 +67,8 @@ export async function createInvoice(prevState: any, formData: FormData) {
       total: submission.value.total,
       note: submission.value.note,
       userId: session.user?.id,
+      invoiceCode: submission.value.invoiceCode,
+      customerId: submission.value.customerId,
     },
   });
 
@@ -127,6 +133,8 @@ export async function updateInvoice(prevState: any, formData: FormData) {
       total: submission.value.total,
       note: submission.value.note,
       userId: session.user?.id,
+      invoiceCode: submission.value.invoiceCode,
+      customerId: submission.value.customerId,
     },
   });
 
@@ -175,8 +183,6 @@ export async function markInvoiceAsPaid(
 ) {
   const session = await requireUser();
 
-  console.log("paymentDate", paymentDate);
-
   const data = await prisma.invoice.update({
     where: {
       id: invoiceId,
@@ -189,4 +195,91 @@ export async function markInvoiceAsPaid(
   });
 
   return redirect("/dashboard/invoices");
+}
+
+export async function getLastInvoiceNumber() {
+  const session = await requireUser();
+
+  const data = await prisma.invoice.findFirst({
+    where: {
+      userId: session.user?.id,
+    },
+    orderBy: {
+      invoiceNumber: "desc",
+    },
+  });
+
+  return data?.invoiceNumber || 0;
+}
+
+export async function createCustomer(prevState: any, formData: FormData) {
+  const session = await requireUser();
+
+  const submission = parseWithZod(formData, {
+    schema: createCustomerSchema,
+  });
+
+  if (submission.status !== "success") {
+    return submission.reply();
+  }
+
+  const data = await prisma.customer.create({
+    data: {
+      address: submission.value.address,
+      email: submission.value.email,
+      name: submission.value.name,
+      phoneNumber: submission.value.phoneNumber,
+      taxNumber: submission.value.taxNumber,
+      invoiceCode: submission.value.invoiceCode,
+      userId: session.user?.id,
+    },
+  });
+
+  return redirect("/dashboard/customers");
+}
+
+export async function updateCustomer(prevState: any, formData: FormData) {
+  const session = await requireUser();
+
+  const submission = parseWithZod(formData, {
+    schema: createCustomerSchema,
+  });
+
+  if (submission.status !== "success") {
+    return submission.reply();
+  }
+
+  const data = await prisma.customer.update({
+    where: {
+      id: formData.get("id") as string,
+      userId: session.user?.id,
+    },
+    data: {
+      address: submission.value.address,
+      email: submission.value.email,
+      name: submission.value.name,
+      phoneNumber: submission.value.phoneNumber,
+      taxNumber: submission.value.taxNumber,
+      invoiceCode: submission.value.invoiceCode,
+      userId: session.user?.id,
+    },
+  });
+
+  return redirect("/dashboard/customers");
+}
+
+export async function archiveCustomer(customerId: string) {
+  const session = await requireUser();
+
+  const data = await prisma.customer.update({
+    where: {
+      id: customerId,
+      userId: session.user?.id,
+    },
+    data: {
+      archived: true,
+    },
+  });
+
+  return redirect("/dashboard/customers");
 }

@@ -24,6 +24,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   invoices      Invoice[]
+  customers     Customer[]
   // Optional for WebAuthn support
   Authenticator Authenticator[]
 
@@ -86,8 +87,26 @@ model Authenticator {
   @@id([userId, credentialID])
 }
 
+model Customer {
+  id          String    @id @default(cuid())
+  userId      String?
+  name        String
+  email       String
+  address     String
+  phoneNumber String?
+  taxNumber   String?
+  invoiceCode String
+  archived    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  invoices    Invoice[]
+
+  user User? @relation(fields: [userId], references: [id])
+}
+
 model Invoice {
   id                     String        @id @default(uuid())
+  customerId             String?
   userId                 String?
   invoiceName            String
   total                  Decimal
@@ -102,6 +121,7 @@ model Invoice {
   clientEmail            String
   clientAddress          String
   currency               String
+  invoiceCode            String        @default("")
   invoiceNumber          Int
   note                   String?
   invoiceItemDescription String
@@ -110,7 +130,8 @@ model Invoice {
   createdAt              DateTime      @default(now())
   updatedAt              DateTime      @updatedAt
 
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customer Customer? @relation(fields: [customerId], references: [id])
 }
 
 enum InvoiceStatus {

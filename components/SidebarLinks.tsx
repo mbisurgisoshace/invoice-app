@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { HomeIcon, Users2Icon } from "lucide-react";
+import { HomeIcon, Users2Icon, BookTextIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -15,9 +15,15 @@ export const SIDEBAR_LINKS = [
   },
   {
     id: 1,
+    name: "Customers",
+    href: "/dashboard/customers",
+    icon: Users2Icon,
+  },
+  {
+    id: 2,
     name: "Invoices",
     href: "/dashboard/invoices",
-    icon: Users2Icon,
+    icon: BookTextIcon,
   },
 ];
 
