@@ -11,6 +11,7 @@ import { SubmitButton } from "./SubmitButton";
 
 import { createCustomer } from "@/app/actions/actions";
 import { createCustomerSchema } from "@/app/utils/schemas";
+import { createDefaultInvoiceCode } from "@/app/utils/utils";
 
 interface CreateCustomerFormProps {}
 
@@ -40,16 +41,7 @@ export function CreateCustomerForm({}: CreateCustomerFormProps) {
                   name={fields.name.name}
                   onBlur={(e) => {
                     if (!invoiceCode) {
-                      const name = e.target.value;
-                      const words = name.split(" ");
-
-                      let code = "";
-                      if (words.length >= 2) {
-                        code = words[0].slice(0, 1) + words[1].slice(0, 1);
-                      } else {
-                        code = words[0].slice(0, 1);
-                      }
-                      setInvoiceCode(code.toUpperCase());
+                      setInvoiceCode(createDefaultInvoiceCode(e.target.value));
                     }
                   }}
                   //defaultValue={`${firstName} ${lastName}`}

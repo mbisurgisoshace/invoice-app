@@ -16,6 +16,7 @@ export async function CustomerTable() {
   const data = await prisma.customer.findMany({
     where: {
       userId: session.user?.id,
+      archived: false,
     },
     select: {
       id: true,

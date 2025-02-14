@@ -1,6 +1,6 @@
 "use client";
 
-import { PencilIcon, TrashIcon, MoreHorizontalIcon } from "lucide-react";
+import { PencilIcon, ArchiveIcon, MoreHorizontalIcon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -22,7 +22,7 @@ import {
   AlertDialogContent,
   AlertDialogDescription,
 } from "@/components/ui/alert-dialog";
-import { deleteInvoice } from "@/app/actions/actions";
+import { archiveCustomer } from "@/app/actions/actions";
 
 interface CustomerTableActionsProps {
   customerId: string;
@@ -33,8 +33,8 @@ export function CustomerTableActions({
 }: CustomerTableActionsProps) {
   const [dialog, setDialog] = useState<string>("");
 
-  const onDeleteCustomer = async () => {
-    await deleteInvoice(customerId);
+  const onArchiveCustomer = async () => {
+    await archiveCustomer(customerId);
   };
 
   const renderDialog = () => {
@@ -43,20 +43,20 @@ export function CustomerTableActions({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Are you sure you want to delete this customer?
+              Are you sure you want to archive this customer?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your
-              customer and all invoices attached to it.
+              This will set your customer as archived and you want be able to
+              see it on the dashboard.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={onDeleteCustomer}
+              onClick={onArchiveCustomer}
               className={buttonVariants({ variant: "destructive" })}
             >
-              Delete
+              Archive
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -85,8 +85,8 @@ export function CustomerTableActions({
               onSelect={() => setDialog("deleteDialog")}
             >
               <AlertDialogTrigger>
-                <TrashIcon className="size-4 mr-2" />
-                Delete Customer
+                <ArchiveIcon className="size-4 mr-2" />
+                Archive Customer
               </AlertDialogTrigger>
             </DropdownMenuItem>
           </DropdownMenuContent>

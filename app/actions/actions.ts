@@ -250,3 +250,19 @@ export async function updateCustomer(prevState: any, formData: FormData) {
 
   return redirect("/dashboard/customers");
 }
+
+export async function archiveCustomer(customerId: string) {
+  const session = await requireUser();
+
+  const data = await prisma.customer.update({
+    where: {
+      id: customerId,
+      userId: session.user?.id,
+    },
+    data: {
+      archived: true,
+    },
+  });
+
+  return redirect("/dashboard/customers");
+}
