@@ -121,6 +121,7 @@ model Invoice {
   clientEmail            String
   clientAddress          String
   currency               String
+  invoiceCode            String        @default("")
   invoiceNumber          Int
   note                   String?
   invoiceItemDescription String

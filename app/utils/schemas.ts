@@ -24,6 +24,7 @@ export const createInvoiceSchema = z.object({
   invoiceItemDescription: z.string().min(1, "Description is required"),
   invoiceItemQuantity: z.number().min(1, "Quantity minimum is 1"),
   invoiceItemRate: z.number().min(1, "Rate minimum is 1"),
+  customerId: z.string().min(1, "Customer is required"),
 });
 
 export const createCustomerSchema = z.object({

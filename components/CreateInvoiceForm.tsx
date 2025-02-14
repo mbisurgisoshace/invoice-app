@@ -25,19 +25,22 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { createInvoice } from "@/app/actions/actions";
 import { createInvoiceSchema } from "@/app/utils/schemas";
 import { formatCurrency } from "@/app/utils/utils";
+import { Prisma } from "@prisma/client";
 
 interface CreateInvoiceFormProps {
-  firstName: string;
-  lastName: string;
-  address: string;
   email: string;
+  address: string;
+  lastName: string;
+  firstName: string;
+  customers: Prisma.CustomerGetPayload<{}>[];
 }
 
 export function CreateInvoiceForm({
-  firstName,
-  lastName,
-  address,
   email,
+  address,
+  lastName,
+  firstName,
+  customers,
 }: CreateInvoiceFormProps) {
   const [lastResult, action] = useActionState(createInvoice, undefined);
   const [form, fields] = useForm({
@@ -48,8 +51,14 @@ export function CreateInvoiceForm({
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
   });
+  const [customerName, setCustomerName] = useState<string | undefined>();
+  const [customerEmail, setCustomerEmail] = useState<string | undefined>();
+  const [customerAddress, setCustomerAddress] = useState<string | undefined>();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currency, setSelectedCurrency] = useState<"USD" | "EUR">("USD");
+  const [selectedCustomer, setSelectedCustomer] = useState<
+    string | undefined
+  >();
 
   const amount = useMemo(() => {
     if (fields.invoiceItemQuantity.value && fields.invoiceItemRate.value)
@@ -60,6 +69,16 @@ export function CreateInvoiceForm({
 
     return 0;
   }, [fields.invoiceItemQuantity.value, fields.invoiceItemRate.value]);
+
+  const onSelectCustomer = (customerId: string) => {
+    const customer = customers.find((customer) => customer.id === customerId)!;
+
+    setSelectedCustomer(customerId);
+
+    setCustomerName(customer.name);
+    setCustomerEmail(customer.email);
+    setCustomerAddress(customer.address);
+  };
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
@@ -76,6 +95,31 @@ export function CreateInvoiceForm({
               />
             </div>
             <p className="text-red-500 text-sm">{fields.invoiceName.errors}</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-6">
+            <div>
+              <Label>Customer</Label>
+              <Select
+                value={selectedCustomer}
+                key={fields.customerId.key}
+                name={fields.customerId.name}
+                //@ts-ignore
+                onValueChange={onSelectCustomer}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Customer" />
+                </SelectTrigger>
+                <SelectContent>
+                  {customers.map((customer) => (
+                    <SelectItem key={customer.id} value={customer.id}>
+                      {customer.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-red-500 text-sm">{fields.customerId.errors}</p>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6 mb-6">
@@ -158,28 +202,34 @@ export function CreateInvoiceForm({
               <Label>To</Label>
               <div className="space-y-2">
                 <Input
+                  value={customerName || ""}
                   placeholder="Client Name"
                   key={fields.clientName.key}
                   name={fields.clientName.name}
                   defaultValue={fields.clientName.initialValue}
+                  onChange={(e) => setCustomerName(e.target.value)}
                 />
                 <p className="text-red-500 text-sm">
                   {fields.clientName.errors}
                 </p>
                 <Input
+                  value={customerEmail || ""}
                   placeholder="Client Email"
                   key={fields.clientEmail.key}
                   name={fields.clientEmail.name}
                   defaultValue={fields.clientEmail.initialValue}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
                 />
                 <p className="text-red-500 text-sm">
                   {fields.clientEmail.errors}
                 </p>
                 <Input
+                  value={customerAddress || ""}
                   placeholder="Client Address"
                   key={fields.clientAddress.key}
                   name={fields.clientAddress.name}
                   defaultValue={fields.clientAddress.initialValue}
+                  onChange={(e) => setCustomerAddress(e.target.value)}
                 />
                 <p className="text-red-500 text-sm">
                   {fields.clientAddress.errors}
