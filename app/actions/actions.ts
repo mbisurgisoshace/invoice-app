@@ -6,7 +6,11 @@ import { parseWithZod } from "@conform-to/zod";
 import { prisma } from "../utils/db";
 import { requireUser } from "../utils/hooks";
 import { emailClient } from "../utils/mailtrap";
-import { createInvoiceSchema, onboardingSchema } from "../utils/schemas";
+import {
+  createCustomerSchema,
+  createInvoiceSchema,
+  onboardingSchema,
+} from "../utils/schemas";
 import { formatCurrency } from "../utils/utils";
 
 export async function onboardUser(prevState: any, formData: FormData) {
@@ -189,4 +193,30 @@ export async function markInvoiceAsPaid(
   });
 
   return redirect("/dashboard/invoices");
+}
+
+export async function createCustomer(prevState: any, formData: FormData) {
+  const session = await requireUser();
+
+  const submission = parseWithZod(formData, {
+    schema: createCustomerSchema,
+  });
+
+  if (submission.status !== "success") {
+    return submission.reply();
+  }
+
+  const data = await prisma.customer.create({
+    data: {
+      address: submission.value.address,
+      email: submission.value.email,
+      name: submission.value.name,
+      phoneNumber: submission.value.phoneNumber,
+      taxNumber: submission.value.taxNumber,
+      invoiceCode: submission.value.invoiceCode,
+      userId: session.user?.id,
+    },
+  });
+
+  return redirect("/dashboard/customers");
 }

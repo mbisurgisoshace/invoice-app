@@ -25,3 +25,14 @@ export const createInvoiceSchema = z.object({
   invoiceItemQuantity: z.number().min(1, "Quantity minimum is 1"),
   invoiceItemRate: z.number().min(1, "Rate minimum is 1"),
 });
+
+export const createCustomerSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email address"),
+  address: z.string().min(1, "Address is required"),
+  taxNumber: z.string().optional(),
+  phoneNumber: z.string().optional(),
+  invoiceCode: z
+    .string()
+    .min(2, "Invoice code is required and must be at least 2 characters "),
+});
