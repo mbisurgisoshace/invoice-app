@@ -21,6 +21,7 @@ export async function GET(
     },
     select: {
       invoiceName: true,
+      invoiceCode: true,
       invoiceNumber: true,
       currency: true,
       fromName: true,
@@ -69,7 +70,11 @@ export async function GET(
 
   // Invoice Details
   pdf.setFontSize(10);
-  pdf.text(`Invoice Number: # ${data.invoiceNumber}`, 120, 40);
+  pdf.text(
+    `Invoice Number: # ${data.invoiceCode} ${data.invoiceNumber}`,
+    120,
+    40
+  );
   pdf.text(
     `Date: ${new Intl.DateTimeFormat("en-US", {
       dateStyle: "long",

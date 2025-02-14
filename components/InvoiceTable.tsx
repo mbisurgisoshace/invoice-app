@@ -27,6 +27,7 @@ export async function InvoiceTable() {
       currency: true,
       createdAt: true,
       clientName: true,
+      invoiceCode: true,
       invoiceNumber: true,
     },
     orderBy: {
@@ -49,7 +50,9 @@ export async function InvoiceTable() {
       <TableBody>
         {data.map((invoice) => (
           <TableRow key={invoice.id}>
-            <TableCell># {invoice.invoiceNumber}</TableCell>
+            <TableCell>
+              # {invoice.invoiceCode} {invoice.invoiceNumber}
+            </TableCell>
             <TableCell>{invoice.clientName}</TableCell>
             <TableCell>
               {formatCurrency(Number(invoice.total), invoice.currency as any)}
