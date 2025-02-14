@@ -67,6 +67,8 @@ export async function createInvoice(prevState: any, formData: FormData) {
       total: submission.value.total,
       note: submission.value.note,
       userId: session.user?.id,
+      invoiceCode: submission.value.invoiceCode,
+      customerId: submission.value.customerId,
     },
   });
 
@@ -179,8 +181,6 @@ export async function markInvoiceAsPaid(
 ) {
   const session = await requireUser();
 
-  console.log("paymentDate", paymentDate);
-
   const data = await prisma.invoice.update({
     where: {
       id: invoiceId,
@@ -193,6 +193,21 @@ export async function markInvoiceAsPaid(
   });
 
   return redirect("/dashboard/invoices");
+}
+
+export async function getLastInvoiceNumber() {
+  const session = await requireUser();
+
+  const data = await prisma.invoice.findFirst({
+    where: {
+      userId: session.user?.id,
+    },
+    orderBy: {
+      invoiceNumber: "desc",
+    },
+  });
+
+  return data?.invoiceNumber || 0;
 }
 
 export async function createCustomer(prevState: any, formData: FormData) {

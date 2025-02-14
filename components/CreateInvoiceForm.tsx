@@ -22,7 +22,7 @@ import { Card, CardContent } from "./ui/card";
 import { SubmitButton } from "./SubmitButton";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
-import { createInvoice } from "@/app/actions/actions";
+import { createInvoice, getLastInvoiceNumber } from "@/app/actions/actions";
 import { createInvoiceSchema } from "@/app/utils/schemas";
 import { formatCurrency } from "@/app/utils/utils";
 import { Prisma } from "@prisma/client";
@@ -32,6 +32,7 @@ interface CreateInvoiceFormProps {
   address: string;
   lastName: string;
   firstName: string;
+  nextInvoiceNumber: number;
   customers: Prisma.CustomerGetPayload<{}>[];
 }
 
@@ -41,6 +42,7 @@ export function CreateInvoiceForm({
   lastName,
   firstName,
   customers,
+  nextInvoiceNumber,
 }: CreateInvoiceFormProps) {
   const [lastResult, action] = useActionState(createInvoice, undefined);
   const [form, fields] = useForm({
@@ -51,6 +53,8 @@ export function CreateInvoiceForm({
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
   });
+
+  const [invoiceCode, setInvoiceCode] = useState<string>("");
   const [customerName, setCustomerName] = useState<string | undefined>();
   const [customerEmail, setCustomerEmail] = useState<string | undefined>();
   const [customerAddress, setCustomerAddress] = useState<string | undefined>();
@@ -70,7 +74,7 @@ export function CreateInvoiceForm({
     return 0;
   }, [fields.invoiceItemQuantity.value, fields.invoiceItemRate.value]);
 
-  const onSelectCustomer = (customerId: string) => {
+  const onSelectCustomer = async (customerId: string) => {
     const customer = customers.find((customer) => customer.id === customerId)!;
 
     setSelectedCustomer(customerId);
@@ -78,12 +82,14 @@ export function CreateInvoiceForm({
     setCustomerName(customer.name);
     setCustomerEmail(customer.email);
     setCustomerAddress(customer.address);
+    setInvoiceCode(customer.invoiceCode);
   };
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardContent className="p-6">
         <form id={form.id} action={action} onSubmit={form.onSubmit} noValidate>
+          <input type="hidden" name="invoiceCode" value={invoiceCode} />
           <div className="flex flex-col gap-1 w-fit mb-6">
             <div className="flex items-center gap-4">
               <Badge variant={"secondary"}>Draft</Badge>
@@ -126,15 +132,15 @@ export function CreateInvoiceForm({
             <div>
               <Label>Invoice No.</Label>
               <div className="flex">
-                <span className="px-3 border border-r-0 rounded-l-md bg-muted flex items-center">
-                  #
+                <span className="px-3 border border-r-0 rounded-l-md bg-muted flex items-center w-20">
+                  # {invoiceCode}
                 </span>
                 <Input
                   placeholder="5"
                   className="rounded-l-none"
                   key={fields.invoiceNumber.key}
                   name={fields.invoiceNumber.name}
-                  defaultValue={fields.invoiceNumber.initialValue}
+                  defaultValue={nextInvoiceNumber}
                 />
               </div>
               <p className="text-red-500 text-sm">
