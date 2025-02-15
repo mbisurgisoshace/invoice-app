@@ -95,7 +95,7 @@ export async function GET(
   pdf.line(20, 102, 190, 102);
 
   pdf.setFont("helvetica", "normal");
-  pdf.text(data.invoiceItemDescription, 20, 110);
+  pdf.text(data.invoiceItemDescription, 20, 110, { maxWidth: 75 });
   pdf.text(data.invoiceItemQuantity.toString(), 100, 110);
   pdf.text(
     formatCurrency(Number(data.invoiceItemRate), data.currency as any),
