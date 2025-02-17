@@ -21,13 +21,17 @@ export const createInvoiceSchema = z.object({
   currency: z.string().min(1, "Currency is required"),
   invoiceNumber: z.number().min(1, "Minimum invoice number of 1"),
   note: z.string().optional(),
-  invoiceItemDescription: z.string().min(1, "Description is required"),
-  invoiceItemQuantity: z.number().min(1, "Quantity minimum is 1"),
-  invoiceItemRate: z.number().min(1, "Rate minimum is 1"),
   customerId: z.string().min(1, "Customer is required"),
   invoiceCode: z
     .string()
     .min(1, "Invoice code is required and must be at least 2 characters "),
+  items: z.array(
+    z.object({
+      description: z.string().min(1, "Description is required"),
+      quantity: z.number().min(1, "Quantity minimum is 1"),
+      rate: z.number().min(1, "Rate minimum is 1"),
+    })
+  ),
 });
 
 export const createCustomerSchema = z.object({

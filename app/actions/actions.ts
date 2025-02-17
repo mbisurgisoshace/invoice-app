@@ -58,9 +58,6 @@ export async function createInvoice(prevState: any, formData: FormData) {
       fromAddress: submission.value.fromAddress,
       fromEmail: submission.value.fromEmail,
       fromName: submission.value.fromName,
-      invoiceItemDescription: submission.value.invoiceItemDescription,
-      invoiceItemQuantity: submission.value.invoiceItemQuantity,
-      invoiceItemRate: submission.value.invoiceItemRate,
       invoiceName: submission.value.invoiceName,
       invoiceNumber: submission.value.invoiceNumber,
       status: submission.value.status,
@@ -69,6 +66,9 @@ export async function createInvoice(prevState: any, formData: FormData) {
       userId: session.user?.id,
       invoiceCode: submission.value.invoiceCode,
       customerId: submission.value.customerId,
+      items: {
+        create: submission.value.items,
+      },
     },
   });
 
