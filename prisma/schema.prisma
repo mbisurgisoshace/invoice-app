@@ -110,33 +110,30 @@ enum InvoiceStatus {
 }
 
 model Invoice {
-  id                     String        @id @default(uuid())
-  customerId             String?
-  userId                 String?
-  invoiceName            String
-  total                  Decimal
-  status                 InvoiceStatus
-  date                   DateTime
-  dueDate                Int
-  payedDate              DateTime?
-  fromName               String
-  fromEmail              String
-  fromAddress            String
-  clientName             String
-  clientEmail            String
-  clientAddress          String
-  currency               String
-  invoiceCode            String        @default("")
-  invoiceNumber          Int
-  note                   String?
-  createdAt              DateTime      @default(now())
-  updatedAt              DateTime      @updatedAt
-  items                  InvoiceItem[]
-  invoiceItemDescription String?
-  invoiceItemQuantity    Decimal?
-  invoiceItemRate        Decimal?
-  user                   User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  customer               Customer?     @relation(fields: [customerId], references: [id])
+  id            String        @id @default(uuid())
+  customerId    String?
+  userId        String?
+  invoiceName   String
+  total         Decimal
+  status        InvoiceStatus
+  date          DateTime
+  dueDate       Int
+  payedDate     DateTime?
+  fromName      String
+  fromEmail     String
+  fromAddress   String
+  clientName    String
+  clientEmail   String
+  clientAddress String
+  currency      String
+  invoiceCode   String        @default("")
+  invoiceNumber Int
+  note          String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  items         InvoiceItem[]
+  user          User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customer      Customer?     @relation(fields: [customerId], references: [id])
 }
 
 model InvoiceItem {
