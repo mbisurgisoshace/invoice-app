@@ -58,7 +58,11 @@ export async function InvoiceTable() {
               {formatCurrency(Number(invoice.total), invoice.currency as any)}
             </TableCell>
             <TableCell>
-              <Badge>{invoice.status}</Badge>
+              <Badge
+                variant={invoice.status === "PAID" ? "success" : "warning"}
+              >
+                {invoice.status}
+              </Badge>
             </TableCell>
             <TableCell>
               {new Intl.DateTimeFormat("en-US", {
