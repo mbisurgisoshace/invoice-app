@@ -389,7 +389,7 @@ export function EditInvoiceForm({ invoice, customers }: EditInvoiceFormProps) {
                       <MinusIcon className="text-primary" />
                     </Button>
                   </div>
-                  <input type="hidden" value={id.value} />
+                  {/* <input type="hidden" value={id.value} /> */}
                 </div>
               );
             })}
