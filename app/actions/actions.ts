@@ -10,6 +10,7 @@ import {
   createCustomerSchema,
   createInvoiceSchema,
   onboardingSchema,
+  updateInvoiceSchema,
 } from "../utils/schemas";
 import { formatCurrency } from "../utils/utils";
 
@@ -102,7 +103,7 @@ export async function updateInvoice(prevState: any, formData: FormData) {
   const session = await requireUser();
 
   const submission = parseWithZod(formData, {
-    schema: createInvoiceSchema,
+    schema: updateInvoiceSchema,
   });
 
   if (submission.status !== "success") {
@@ -124,9 +125,6 @@ export async function updateInvoice(prevState: any, formData: FormData) {
       fromAddress: submission.value.fromAddress,
       fromEmail: submission.value.fromEmail,
       fromName: submission.value.fromName,
-      invoiceItemDescription: submission.value.invoiceItemDescription,
-      invoiceItemQuantity: submission.value.invoiceItemQuantity,
-      invoiceItemRate: submission.value.invoiceItemRate,
       invoiceName: submission.value.invoiceName,
       invoiceNumber: submission.value.invoiceNumber,
       status: submission.value.status,
@@ -135,6 +133,10 @@ export async function updateInvoice(prevState: any, formData: FormData) {
       userId: session.user?.id,
       invoiceCode: submission.value.invoiceCode,
       customerId: submission.value.customerId,
+      items: {
+        deleteMany: {},
+        create: submission.value.items,
+      },
     },
   });
 

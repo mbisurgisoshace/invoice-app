@@ -53,7 +53,6 @@ export function CreateInvoiceForm({
     defaultValue: {
       items: [
         {
-          id: undefined,
           description: "",
           quantity: 0,
           rate: 0,
@@ -340,7 +339,7 @@ export function CreateInvoiceForm({
             </div>
 
             {fields.items.getFieldList().map((item, index) => {
-              const { id, description, quantity, rate } = item.getFieldset();
+              const { description, quantity, rate } = item.getFieldset();
               let amount = 0;
               if (quantity.value && rate.value) {
                 amount = parseFloat(quantity.value) * parseFloat(rate.value);
@@ -395,12 +394,6 @@ export function CreateInvoiceForm({
                       <MinusIcon className="text-primary" />
                     </Button>
                   </div>
-
-                  <input
-                    type="hidden"
-                    name={id.name}
-                    defaultValue={id.initialValue}
-                  />
                 </div>
               );
             })}

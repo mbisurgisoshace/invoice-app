@@ -19,6 +19,9 @@ export default async function Invoice({
         id: invoiceId,
         userId: session.user?.id,
       },
+      include: {
+        items: true,
+      },
     }),
     await prisma.customer.findMany({
       where: {
