@@ -32,11 +32,9 @@ export async function GET(
       clientAddress: true,
       date: true,
       dueDate: true,
-      invoiceItemDescription: true,
-      invoiceItemQuantity: true,
-      invoiceItemRate: true,
       total: true,
       note: true,
+      items: true,
     },
   });
 
@@ -95,27 +93,51 @@ export async function GET(
   pdf.line(20, 102, 190, 102);
 
   pdf.setFont("helvetica", "normal");
-  pdf.text(data.invoiceItemDescription, 20, 110, { maxWidth: 75 });
-  pdf.text(data.invoiceItemQuantity.toString(), 100, 110);
-  pdf.text(
-    formatCurrency(Number(data.invoiceItemRate), data.currency as any),
-    130,
-    110
-  );
-  pdf.text(formatCurrency(Number(data.total), data.currency as any), 160, 110);
+
+  let y = 110;
+  const lineGap = 5;
+
+  data.items.forEach((item, index) => {
+    pdf.text(item.description, 20, y, { maxWidth: 75 });
+    pdf.text(item.quantity.toString(), 100, y);
+    pdf.text(formatCurrency(Number(item.rate), data.currency as any), 130, y);
+    pdf.text(
+      formatCurrency(
+        Number(item.rate) * Number(item.quantity),
+        data.currency as any
+      ),
+      160,
+      y
+    );
+
+    y += lineGap;
+  });
 
   // Total Section
-  pdf.line(20, 115, 190, 115);
+  pdf.line(
+    20,
+    115 + lineGap * (data.items.length - 1),
+    190,
+    115 + lineGap * (data.items.length - 1)
+  );
   pdf.setFont("helvetica", "bold");
-  pdf.text(`Total (${data.currency})`, 130, 130);
-  pdf.text(formatCurrency(Number(data.total), data.currency as any), 160, 130);
+  pdf.text(
+    `Total (${data.currency})`,
+    130,
+    130 + lineGap * (data.items.length - 1)
+  );
+  pdf.text(
+    formatCurrency(Number(data.total), data.currency as any),
+    160,
+    130 + lineGap * (data.items.length - 1)
+  );
 
   // Notes Section
   if (data.note) {
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(10);
-    pdf.text("Note:", 20, 150);
-    pdf.text(data.note, 20, 155);
+    pdf.text("Note:", 20, 150 + lineGap * (data.items.length - 1));
+    pdf.text(data.note, 20, 155 + lineGap * (data.items.length - 1));
   }
 
   const pdfBuffer = Buffer.from(pdf.output("arraybuffer"));
