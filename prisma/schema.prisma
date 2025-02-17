@@ -104,6 +104,11 @@ model Customer {
   user User? @relation(fields: [userId], references: [id])
 }
 
+enum InvoiceStatus {
+  PAID
+  PENDING
+}
+
 model Invoice {
   id                     String        @id @default(uuid())
   customerId             String?
@@ -124,17 +129,23 @@ model Invoice {
   invoiceCode            String        @default("")
   invoiceNumber          Int
   note                   String?
-  invoiceItemDescription String
-  invoiceItemQuantity    Decimal
-  invoiceItemRate        Decimal
   createdAt              DateTime      @default(now())
   updatedAt              DateTime      @updatedAt
-
-  user     User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  customer Customer? @relation(fields: [customerId], references: [id])
+  items                  InvoiceItem[]
+  invoiceItemDescription String?
+  invoiceItemQuantity    Decimal?
+  invoiceItemRate        Decimal?
+  user                   User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customer               Customer?     @relation(fields: [customerId], references: [id])
 }
 
-enum InvoiceStatus {
-  PAID
-  PENDING
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  description String
+  quantity    Decimal
+  rate        Decimal
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  Invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 }

@@ -1,9 +1,10 @@
 "use client";
 
-import { CalendarIcon } from "lucide-react";
+import { Prisma } from "@prisma/client";
 import { useForm } from "@conform-to/react";
-import { useActionState, useMemo, useState } from "react";
 import { parseWithZod } from "@conform-to/zod";
+import { CalendarIcon, MinusIcon } from "lucide-react";
+import { useActionState, useMemo, useState } from "react";
 
 import {
   Select,
@@ -22,10 +23,9 @@ import { Card, CardContent } from "./ui/card";
 import { SubmitButton } from "./SubmitButton";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
-import { createInvoice, getLastInvoiceNumber } from "@/app/actions/actions";
-import { createInvoiceSchema } from "@/app/utils/schemas";
 import { formatCurrency } from "@/app/utils/utils";
-import { Prisma } from "@prisma/client";
+import { createInvoice } from "@/app/actions/actions";
+import { createInvoiceSchema } from "@/app/utils/schemas";
 
 interface CreateInvoiceFormProps {
   email: string;
@@ -50,6 +50,15 @@ export function CreateInvoiceForm({
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: createInvoiceSchema });
     },
+    defaultValue: {
+      items: [
+        {
+          description: "",
+          quantity: 0,
+          rate: 0,
+        },
+      ],
+    },
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
   });
@@ -64,16 +73,6 @@ export function CreateInvoiceForm({
     string | undefined
   >();
 
-  const amount = useMemo(() => {
-    if (fields.invoiceItemQuantity.value && fields.invoiceItemRate.value)
-      return (
-        parseFloat(fields.invoiceItemQuantity.value) *
-        parseFloat(fields.invoiceItemRate.value)
-      );
-
-    return 0;
-  }, [fields.invoiceItemQuantity.value, fields.invoiceItemRate.value]);
-
   const onSelectCustomer = async (customerId: string) => {
     const customer = customers.find((customer) => customer.id === customerId)!;
 
@@ -83,6 +82,30 @@ export function CreateInvoiceForm({
     setCustomerEmail(customer.email);
     setCustomerAddress(customer.address);
     setInvoiceCode(customer.invoiceCode);
+  };
+
+  const getTotalQuantity = () => {
+    let total = 0;
+    fields.items.getFieldList().forEach((item) => {
+      const { quantity } = item.getFieldset();
+      if (quantity.value) {
+        total += parseFloat(quantity.value);
+      }
+    });
+
+    return total;
+  };
+
+  const getSubTotal = () => {
+    let total = 0;
+    fields.items.getFieldList().forEach((item) => {
+      const { quantity, rate } = item.getFieldset();
+      if (quantity.value && rate.value) {
+        total += parseFloat(quantity.value) * parseFloat(rate.value);
+      }
+    });
+
+    return total;
   };
 
   return (
@@ -315,64 +338,100 @@ export function CreateInvoiceForm({
               <p className="col-span-2">Amount</p>
             </div>
 
-            <div className="grid grid-cols-12 gap-4 mb-4">
-              <div className="col-span-6">
-                <Textarea
-                  placeholder="Item name & description"
-                  key={fields.invoiceItemDescription.key}
-                  name={fields.invoiceItemDescription.name}
-                  defaultValue={fields.invoiceItemDescription.initialValue}
-                />
-                <p className="text-red-500 text-sm">
-                  {fields.invoiceItemDescription.errors}
-                </p>
-              </div>
-              <div className="col-span-2">
-                <Input
-                  type="number"
-                  placeholder="0"
-                  key={fields.invoiceItemQuantity.key}
-                  name={fields.invoiceItemQuantity.name}
-                />
-                <p className="text-red-500 text-sm">
-                  {fields.invoiceItemQuantity.errors}
-                </p>
-              </div>
-              <div className="col-span-2">
-                <Input
-                  type="number"
-                  placeholder="0"
-                  key={fields.invoiceItemRate.key}
-                  name={fields.invoiceItemRate.name}
-                />
-                <p className="text-red-500 text-sm">
-                  {fields.invoiceItemRate.errors}
-                </p>
-              </div>
-              <div className="col-span-2">
-                <Input
-                  disabled
-                  placeholder="0"
-                  onChange={() => {}}
-                  value={formatCurrency(amount, currency)}
-                />
-              </div>
+            {fields.items.getFieldList().map((item, index) => {
+              const { description, quantity, rate } = item.getFieldset();
+              let amount = 0;
+              if (quantity.value && rate.value) {
+                amount = parseFloat(quantity.value) * parseFloat(rate.value);
+              }
+
+              return (
+                <div className="grid grid-cols-12 gap-4 mb-4" key={index}>
+                  <div className="col-span-6">
+                    <Textarea
+                      placeholder="Item name & description"
+                      key={description.key}
+                      name={description.name}
+                      defaultValue={description.initialValue}
+                    />
+                    <p className="text-red-500 text-sm">{description.errors}</p>
+                  </div>
+
+                  <div className="col-span-2">
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      key={quantity.key}
+                      name={quantity.name}
+                    />
+                    <p className="text-red-500 text-sm">{quantity.errors}</p>
+                  </div>
+
+                  <div className="col-span-2">
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      key={rate.key}
+                      name={rate.name}
+                    />
+                    <p className="text-red-500 text-sm">{rate.errors}</p>
+                  </div>
+
+                  <div className="col-span-2 flex gap-[2px]">
+                    <Input
+                      disabled
+                      placeholder="0"
+                      value={formatCurrency(amount, currency)}
+                    />
+                    <Button
+                      variant={"ghost"}
+                      size="icon"
+                      {...form.remove.getButtonProps({
+                        name: fields.items.name,
+                        index,
+                      })}
+                    >
+                      <MinusIcon className="text-primary" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+
+            <div className="grid grid-cols-12 gap-4 mb-2 font-medium">
+              <p className="col-span-6 text-right">Total Quantity</p>
+              <p className="col-span-2 ">{getTotalQuantity()}</p>
+              <p className="col-span-2" />
+              <p className="col-span-2" />
             </div>
+
+            <Button
+              variant={"default"}
+              {...form.insert.getButtonProps({
+                name: fields.items.name,
+              })}
+            >
+              + Add Item
+            </Button>
           </div>
 
           <div className="flex justify-end">
             <div className="w-1/3">
               <div className="flex justify-between py-2">
                 <span>Subtotal</span>
-                <span>{formatCurrency(amount, currency)}</span>
+                <span>{formatCurrency(getSubTotal(), currency)}</span>
               </div>
 
               <div className="flex justify-between py-2 border-t">
                 <span>{`Total (${currency})`}</span>
                 <span className="font-bold">
-                  {formatCurrency(amount, currency)}
+                  {formatCurrency(getSubTotal(), currency)}
                 </span>
-                <input type="hidden" name={fields.total.name} value={amount} />
+                <input
+                  type="hidden"
+                  name={fields.total.name}
+                  value={getSubTotal()}
+                />
               </div>
             </div>
           </div>
