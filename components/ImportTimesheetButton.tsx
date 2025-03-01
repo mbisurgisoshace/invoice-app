@@ -86,7 +86,7 @@ export function ImportTimesheetButton({
         <Tooltip>
           <DialogTrigger asChild>
             <TooltipTrigger asChild>
-              <Button size={"icon"} variant={"link"} onClick={(e) => {}}>
+              <Button size={"icon"} variant={"link"} className="h-6">
                 <ImportIcon size={10} />
               </Button>
             </TooltipTrigger>

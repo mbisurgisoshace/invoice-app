@@ -24,6 +24,7 @@ import { Label } from "./ui/label";
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 import { Textarea } from "./ui/textarea";
+import { Checkbox } from "./ui/checkbox";
 import { Card, CardContent } from "./ui/card";
 import { SubmitButton } from "./SubmitButton";
 
@@ -69,6 +70,7 @@ export function CreateInvoiceForm({
     shouldRevalidate: "onInput",
   });
 
+  const [applySameRate, setApplySameRate] = useState(false);
   const [invoiceCode, setInvoiceCode] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [customerName, setCustomerName] = useState<string | undefined>();
@@ -349,9 +351,24 @@ export function CreateInvoiceForm({
 
           <div>
             <div className="grid grid-cols-12 gap-4 mb-2 font-medium">
-              <p className="col-span-6 flex items-center">
-                Description
-                <ImportTimesheetButton onImportData={onImportData} />
+              <p className="col-span-6 flex justify-between">
+                <span className="flex ">
+                  Description
+                  <ImportTimesheetButton onImportData={onImportData} />
+                </span>
+                <span className="flex items-center space-x-2">
+                  <Checkbox
+                    id="apply-same-rate"
+                    checked={applySameRate}
+                    onCheckedChange={() => setApplySameRate(!applySameRate)}
+                  />
+                  <label
+                    htmlFor="apply-same-rate"
+                    className="text-sm font-bold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Apply same rate
+                  </label>
+                </span>
               </p>
               <p className="col-span-2">Quantity</p>
               <p className="col-span-2">Rate</p>
@@ -397,6 +414,28 @@ export function CreateInvoiceForm({
                       {...getInputProps(rate, { type: "text" })}
                       //name={rate.name}
                       key={rate.key}
+                      onBlur={() => {
+                        if (index === 0 && applySameRate && rate.value) {
+                          fields.items.getFieldList().forEach((item, index) => {
+                            if (index !== 0) {
+                              const {
+                                description,
+                                quantity,
+                                rate: defaultRate,
+                              } = item.getFieldset();
+                              form.update({
+                                name: fields.items.name,
+                                index,
+                                value: {
+                                  quantity: quantity.value,
+                                  description: description.value,
+                                  rate: defaultRate.value || rate.value,
+                                },
+                              });
+                            }
+                          });
+                        }
+                      }}
                     />
                     <p className="text-red-500 text-sm">{rate.errors}</p>
                   </div>
