@@ -127,6 +127,16 @@ export function CreateInvoiceForm({
     });
   };
 
+  const getRateValue = (
+    rateValue: string | undefined,
+    rateSetter: string | undefined
+  ) => {
+    if (!rateValue || rateValue === "0") {
+      return rateSetter;
+    }
+    return rateValue;
+  };
+
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardContent className="p-6">
@@ -421,15 +431,20 @@ export function CreateInvoiceForm({
                               const {
                                 description,
                                 quantity,
-                                rate: defaultRate,
+                                rate: rateToSet,
                               } = item.getFieldset();
+
                               form.update({
                                 name: fields.items.name,
                                 index,
                                 value: {
                                   quantity: quantity.value,
                                   description: description.value,
-                                  rate: defaultRate.value || rate.value,
+                                  // rate: getRateValue(
+                                  //   rateToSet.value,
+                                  //   rate.value
+                                  // ),
+                                  rate: rate.value,
                                 },
                               });
                             }

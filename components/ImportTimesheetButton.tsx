@@ -56,11 +56,11 @@ export function ImportTimesheetButton({
               const totalTimeInHours =
                 parseFloat(hours) + convertedMinsIntoHours;
 
-              if (items.has(item.Task)) {
-                const sumTime = items.get(item.Task) || 0;
-                items.set(item.Task, sumTime + totalTimeInHours);
+              if (items.has(item.Date)) {
+                const sumTime = items.get(item.Date) || 0;
+                items.set(item.Date, sumTime + totalTimeInHours);
               } else {
-                items.set(item.Task, totalTimeInHours);
+                items.set(item.Date, totalTimeInHours);
               }
             }
 
@@ -96,8 +96,12 @@ export function ImportTimesheetButton({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Import from File</DialogTitle>
-            <DialogDescription>
-              Import your timesheet records from your time tracking app
+            <DialogDescription className="flex flex-col gap-1 font-semibold">
+              Import your timesheet records from your time tracking app.
+              <span className="font-normal">
+                For retrieving the file to import, go to Reports {">"} Time &
+                Activity {">"} Export {">"} To CSV {">"} Expanded Report
+              </span>
             </DialogDescription>
           </DialogHeader>
 
