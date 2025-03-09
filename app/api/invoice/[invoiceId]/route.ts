@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/app/utils/db";
 import { requireUser } from "@/app/utils/hooks";
-import { formatCurrency } from "@/app/utils/utils";
+import { formatCurrency, paginateInvoiceLineItems } from "@/app/utils/utils";
 
 export async function GET(
   request: Request,
@@ -50,95 +50,217 @@ export async function GET(
 
   pdf.setFont("helvetica");
 
-  // Header
-  pdf.setFontSize(24);
-  pdf.text(data.invoiceName, 20, 20);
+  const paginatedItems = paginateInvoiceLineItems(data.items, 10);
+  console.log("paginatedItems", paginatedItems);
 
-  // From Section
-  pdf.setFontSize(12);
-  pdf.text("From", 20, 40);
-  pdf.setFontSize(10);
-  pdf.text([data.fromName, data.fromEmail, data.fromAddress], 20, 45);
+  paginatedItems.forEach((items, index) => {
+    pdf.setFont("helvetica", "normal");
 
-  // Client Section
-  pdf.setFontSize(12);
-  pdf.text("Bill to", 20, 70);
-  pdf.setFontSize(10);
-  pdf.text([data.clientName, data.clientEmail, data.clientAddress], 20, 75);
+    if (index !== 0) {
+      pdf.addPage();
+    }
 
-  // Invoice Details
-  pdf.setFontSize(10);
-  pdf.text(
-    `Invoice Number: # ${data.invoiceCode} ${data.invoiceNumber}`,
-    120,
-    40
-  );
-  pdf.text(
-    `Date: ${new Intl.DateTimeFormat("en-US", {
-      dateStyle: "long",
-    }).format(data.date)}`,
-    120,
-    45
-  );
-  pdf.text(`Due Date: Net ${data.dueDate}`, 120, 50);
+    // Header
+    pdf.setFontSize(24);
+    //pdf.text(data.invoiceName, 20, 20);
+    pdf.text(`Invoice # ${data.invoiceCode} ${data.invoiceNumber}`, 20, 20);
 
-  // Invoice Items
-  pdf.setFontSize(10);
-  pdf.setFont("helvetica", "bold");
-  pdf.text("Description", 20, 100);
-  pdf.text("Quantity", 100, 100);
-  pdf.text("Rate", 130, 100);
-  pdf.text("Amount", 160, 100);
+    // From Section
+    pdf.setFontSize(12);
+    pdf.text("From", 20, 40);
+    pdf.setFontSize(10);
+    pdf.text([data.fromName, data.fromEmail, data.fromAddress], 20, 45);
 
-  pdf.line(20, 102, 190, 102);
+    // Client Section
+    pdf.setFontSize(12);
+    pdf.text("Bill to", 20, 70);
+    pdf.setFontSize(10);
+    pdf.text([data.clientName, data.clientEmail, data.clientAddress], 20, 75);
 
-  pdf.setFont("helvetica", "normal");
-
-  let y = 110;
-  const lineGap = 5;
-
-  data.items.forEach((item, index) => {
-    pdf.text(item.description, 20, y, { maxWidth: 75 });
-    pdf.text(item.quantity.toString(), 100, y);
-    pdf.text(formatCurrency(Number(item.rate), data.currency as any), 130, y);
+    // Invoice Details
+    pdf.setFontSize(10);
     pdf.text(
-      formatCurrency(
-        Number(item.rate) * Number(item.quantity),
+      `Invoice Number: # ${data.invoiceCode} ${data.invoiceNumber}`,
+      120,
+      40
+    );
+    pdf.text(
+      `Date: ${new Intl.DateTimeFormat("en-US", {
+        dateStyle: "long",
+      }).format(data.date)}`,
+      120,
+      45
+    );
+    pdf.text(`Due Date: Net ${data.dueDate}`, 120, 50);
+
+    //Invoice Total
+    pdf.setFont("helvetica", "bold");
+    pdf.text(
+      `Total (${data.currency}): ${formatCurrency(
+        Number(data.total),
         data.currency as any
-      ),
-      160,
-      y
+      )}`,
+      120,
+      55
     );
 
-    y += lineGap;
+    // Invoice Items
+    pdf.setFontSize(10);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Description", 20, 100);
+    pdf.text("Quantity", 100, 100);
+    pdf.text("Rate", 130, 100);
+    pdf.text("Amount", 160, 100);
+
+    pdf.line(20, 102, 190, 102);
+
+    pdf.setFont("helvetica", "normal");
+
+    let y = 110;
+    const lineGap = 10;
+
+    items.forEach((item, index) => {
+      pdf.text(item.description, 20, y, { maxWidth: 75 });
+      pdf.text(item.quantity.toString(), 100, y);
+      pdf.text(formatCurrency(Number(item.rate), data.currency as any), 130, y);
+      pdf.text(
+        formatCurrency(
+          Number(item.rate) * Number(item.quantity),
+          data.currency as any
+        ),
+        160,
+        y
+      );
+
+      y += lineGap;
+    });
+
+    // Total Section
+    pdf.line(20, y, 190, y);
+
+    if (index === paginatedItems.length - 1) {
+      // Notes Section
+      if (data.note) {
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(10);
+        pdf.text("Note:", 20, y + 10);
+        pdf.text(data.note, 20, y + 15);
+      }
+    }
+
+    pdf.setFont("helvetica", "bold");
+
+    pdf.text(`${index + 1} / ${paginatedItems.length}`, 20, 280);
   });
 
-  // Total Section
-  pdf.line(
-    20,
-    115 + lineGap * (data.items.length - 1),
-    190,
-    115 + lineGap * (data.items.length - 1)
-  );
-  pdf.setFont("helvetica", "bold");
-  pdf.text(
-    `Total (${data.currency})`,
-    130,
-    130 + lineGap * (data.items.length - 1)
-  );
-  pdf.text(
-    formatCurrency(Number(data.total), data.currency as any),
-    160,
-    130 + lineGap * (data.items.length - 1)
-  );
+  // // Header
+  // pdf.setFontSize(24);
+  // //pdf.text(data.invoiceName, 20, 20);
+  // pdf.text(`Invoice # ${data.invoiceCode} ${data.invoiceNumber}`, 20, 20);
 
-  // Notes Section
-  if (data.note) {
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(10);
-    pdf.text("Note:", 20, 150 + lineGap * (data.items.length - 1));
-    pdf.text(data.note, 20, 155 + lineGap * (data.items.length - 1));
-  }
+  // // From Section
+  // pdf.setFontSize(12);
+  // pdf.text("From", 20, 40);
+  // pdf.setFontSize(10);
+  // pdf.text([data.fromName, data.fromEmail, data.fromAddress], 20, 45);
+
+  // // Client Section
+  // pdf.setFontSize(12);
+  // pdf.text("Bill to", 20, 70);
+  // pdf.setFontSize(10);
+  // pdf.text([data.clientName, data.clientEmail, data.clientAddress], 20, 75);
+
+  // // Invoice Details
+  // pdf.setFontSize(10);
+  // pdf.text(
+  //   `Invoice Number: # ${data.invoiceCode} ${data.invoiceNumber}`,
+  //   120,
+  //   40
+  // );
+  // pdf.text(
+  //   `Date: ${new Intl.DateTimeFormat("en-US", {
+  //     dateStyle: "long",
+  //   }).format(data.date)}`,
+  //   120,
+  //   45
+  // );
+  // pdf.text(`Due Date: Net ${data.dueDate}`, 120, 50);
+
+  // //Invoice Total
+  // pdf.setFont("helvetica", "bold");
+  // pdf.text(
+  //   `Total (${data.currency}): ${formatCurrency(
+  //     Number(data.total),
+  //     data.currency as any
+  //   )}`,
+  //   120,
+  //   55
+  // );
+
+  // // Invoice Items
+  // pdf.setFontSize(10);
+  // pdf.setFont("helvetica", "bold");
+  // pdf.text("Description", 20, 100);
+  // pdf.text("Quantity", 100, 100);
+  // pdf.text("Rate", 130, 100);
+  // pdf.text("Amount", 160, 100);
+
+  // pdf.line(20, 102, 190, 102);
+
+  // pdf.setFont("helvetica", "normal");
+
+  // let y = 110;
+  // const lineGap = 10;
+
+  // data.items.forEach((item, index) => {
+  //   pdf.text(item.description, 20, y, { maxWidth: 75 });
+  //   pdf.text(item.quantity.toString(), 100, y);
+  //   pdf.text(formatCurrency(Number(item.rate), data.currency as any), 130, y);
+  //   pdf.text(
+  //     formatCurrency(
+  //       Number(item.rate) * Number(item.quantity),
+  //       data.currency as any
+  //     ),
+  //     160,
+  //     y
+  //   );
+
+  //   y += lineGap;
+  // });
+
+  // // Total Section
+  // pdf.line(
+  //   20,
+  //   115 + lineGap * (data.items.length - 1),
+  //   190,
+  //   115 + lineGap * (data.items.length - 1)
+  // );
+  // pdf.setFont("helvetica", "bold");
+
+  // pdf.text(
+  //   `${"1"} / ${paginatedItems.length}`,
+  //   20,
+  //   130 + lineGap * (data.items.length - 1)
+  // );
+
+  // pdf.text(
+  //   `Total (${data.currency})`,
+  //   130,
+  //   130 + lineGap * (data.items.length - 1)
+  // );
+  // pdf.text(
+  //   formatCurrency(Number(data.total), data.currency as any),
+  //   160,
+  //   130 + lineGap * (data.items.length - 1)
+  // );
+
+  // // Notes Section
+  // if (data.note) {
+  //   pdf.setFont("helvetica", "normal");
+  //   pdf.setFontSize(10);
+  //   pdf.text("Note:", 20, 150 + lineGap * (data.items.length - 1));
+  //   pdf.text(data.note, 20, 155 + lineGap * (data.items.length - 1));
+  // }
 
   const pdfBuffer = Buffer.from(pdf.output("arraybuffer"));
 

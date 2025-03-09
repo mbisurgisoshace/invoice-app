@@ -1,10 +1,15 @@
 "use client";
 
 import { Prisma } from "@prisma/client";
-import { useForm } from "@conform-to/react";
+import {
+  getInputProps,
+  useField,
+  useForm,
+  useInputControl,
+} from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
+import { useActionState, useState } from "react";
 import { CalendarIcon, MinusIcon } from "lucide-react";
-import { useActionState, useMemo, useState } from "react";
 
 import {
   Select,
@@ -19,13 +24,15 @@ import { Label } from "./ui/label";
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 import { Textarea } from "./ui/textarea";
+import { Checkbox } from "./ui/checkbox";
 import { Card, CardContent } from "./ui/card";
 import { SubmitButton } from "./SubmitButton";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 import { formatCurrency } from "@/app/utils/utils";
 import { createInvoice } from "@/app/actions/actions";
 import { createInvoiceSchema } from "@/app/utils/schemas";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { ImportedData, ImportTimesheetButton } from "./ImportTimesheetButton";
 
 interface CreateInvoiceFormProps {
   email: string;
@@ -63,12 +70,13 @@ export function CreateInvoiceForm({
     shouldRevalidate: "onInput",
   });
 
+  const [applySameRate, setApplySameRate] = useState(false);
   const [invoiceCode, setInvoiceCode] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [customerName, setCustomerName] = useState<string | undefined>();
+  const [currency, setSelectedCurrency] = useState<"USD" | "EUR">("USD");
   const [customerEmail, setCustomerEmail] = useState<string | undefined>();
   const [customerAddress, setCustomerAddress] = useState<string | undefined>();
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [currency, setSelectedCurrency] = useState<"USD" | "EUR">("USD");
   const [selectedCustomer, setSelectedCustomer] = useState<
     string | undefined
   >();
@@ -106,6 +114,27 @@ export function CreateInvoiceForm({
     });
 
     return total;
+  };
+
+  const onImportData = (importedData: ImportedData[]) => {
+    form.update({
+      name: fields.items.name,
+      value: importedData.map((data) => ({
+        description: data.description,
+        quantity: data.quantity,
+        rate: 0,
+      })),
+    });
+  };
+
+  const getRateValue = (
+    rateValue: string | undefined,
+    rateSetter: string | undefined
+  ) => {
+    if (!rateValue || rateValue === "0") {
+      return rateSetter;
+    }
+    return rateValue;
   };
 
   return (
@@ -332,7 +361,25 @@ export function CreateInvoiceForm({
 
           <div>
             <div className="grid grid-cols-12 gap-4 mb-2 font-medium">
-              <p className="col-span-6">Description</p>
+              <p className="col-span-6 flex justify-between">
+                <span className="flex ">
+                  Description
+                  <ImportTimesheetButton onImportData={onImportData} />
+                </span>
+                <span className="flex items-center space-x-2">
+                  <Checkbox
+                    id="apply-same-rate"
+                    checked={applySameRate}
+                    onCheckedChange={() => setApplySameRate(!applySameRate)}
+                  />
+                  <label
+                    htmlFor="apply-same-rate"
+                    className="text-sm font-bold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Apply same rate
+                  </label>
+                </span>
+              </p>
               <p className="col-span-2">Quantity</p>
               <p className="col-span-2">Rate</p>
               <p className="col-span-2">Amount</p>
@@ -340,6 +387,7 @@ export function CreateInvoiceForm({
 
             {fields.items.getFieldList().map((item, index) => {
               const { description, quantity, rate } = item.getFieldset();
+
               let amount = 0;
               if (quantity.value && rate.value) {
                 amount = parseFloat(quantity.value) * parseFloat(rate.value);
@@ -350,29 +398,59 @@ export function CreateInvoiceForm({
                   <div className="col-span-6">
                     <Textarea
                       placeholder="Item name & description"
+                      //name={description.name}
+                      {...getInputProps(description, { type: "text" })}
                       key={description.key}
-                      name={description.name}
-                      defaultValue={description.initialValue}
+                      //defaultValue={description.initialValue}
                     />
                     <p className="text-red-500 text-sm">{description.errors}</p>
                   </div>
 
                   <div className="col-span-2">
                     <Input
-                      type="number"
+                      //type="number"
                       placeholder="0"
+                      {...getInputProps(quantity, { type: "text" })}
                       key={quantity.key}
-                      name={quantity.name}
+                      //name={quantity.name}
                     />
                     <p className="text-red-500 text-sm">{quantity.errors}</p>
                   </div>
 
                   <div className="col-span-2">
                     <Input
-                      type="number"
+                      //type="number"
                       placeholder="0"
+                      {...getInputProps(rate, { type: "text" })}
+                      //name={rate.name}
                       key={rate.key}
-                      name={rate.name}
+                      onBlur={() => {
+                        if (index === 0 && applySameRate && rate.value) {
+                          fields.items.getFieldList().forEach((item, index) => {
+                            if (index !== 0) {
+                              const {
+                                description,
+                                quantity,
+                                rate: rateToSet,
+                              } = item.getFieldset();
+
+                              form.update({
+                                name: fields.items.name,
+                                index,
+                                value: {
+                                  quantity: quantity.value,
+                                  description: description.value,
+                                  // rate: getRateValue(
+                                  //   rateToSet.value,
+                                  //   rate.value
+                                  // ),
+                                  rate: rate.value,
+                                },
+                              });
+                            }
+                          });
+                        }
+                      }}
                     />
                     <p className="text-red-500 text-sm">{rate.errors}</p>
                   </div>
