@@ -1,8 +1,8 @@
 "use client";
 
 import { Prisma } from "@prisma/client";
-import { CalendarIcon, MinusIcon } from "lucide-react";
-import { useForm } from "@conform-to/react";
+import { CalendarIcon, MinusIcon, XIcon } from "lucide-react";
+import { getInputProps, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { useActionState, useMemo, useState } from "react";
 
@@ -51,6 +51,8 @@ export function EditInvoiceForm({ invoice, customers }: EditInvoiceFormProps) {
     },
   });
 
+  const [discount, setDiscount] = useState<string>(invoice.discount.toString());
+  const [applyDiscount, setApplyDiscount] = useState(!!invoice.discount);
   const [invoiceCode, setInvoiceCode] = useState<string>(invoice.invoiceCode);
   const [customerName, setCustomerName] = useState<string>(invoice.clientName);
   const [customerEmail, setCustomerEmail] = useState<string>(
@@ -102,6 +104,17 @@ export function EditInvoiceForm({ invoice, customers }: EditInvoiceFormProps) {
     });
 
     return total;
+  };
+
+  const getTotal = () => {
+    let discountValue = 0;
+    const subtotal = getSubTotal();
+
+    if (applyDiscount) {
+      discountValue = parseFloat(discount);
+    }
+
+    return subtotal - discountValue;
   };
 
   return (
@@ -396,7 +409,7 @@ export function EditInvoiceForm({ invoice, customers }: EditInvoiceFormProps) {
 
             <div className="grid grid-cols-12 gap-4 mb-2 font-medium">
               <p className="col-span-6 text-right">Total Quantity</p>
-              <p className="col-span-2 ">{getTotalQuantity()}</p>
+              <p className="col-span-2 ">{getTotalQuantity().toFixed(2)}</p>
               <p className="col-span-2" />
               <p className="col-span-2" />
             </div>
@@ -418,15 +431,54 @@ export function EditInvoiceForm({ invoice, customers }: EditInvoiceFormProps) {
                 <span>{formatCurrency(getSubTotal(), currency)}</span>
               </div>
 
+              <div>
+                {!applyDiscount ? (
+                  <Button
+                    size={"sm"}
+                    variant={"link"}
+                    onClick={() => setApplyDiscount(!applyDiscount)}
+                  >
+                    + Discount
+                  </Button>
+                ) : (
+                  <div className="flex  py-2 items-center">
+                    <span>Discount</span>
+                    <Input
+                      placeholder="0"
+                      value={discount}
+                      className="ml-4 text-right"
+                      onChange={(e) => setDiscount(e.target.value)}
+                      {...getInputProps(fields.discount, { type: "text" })}
+                      key={fields.discount.key}
+                    />
+                    <Button
+                      size="icon"
+                      className="ml-2"
+                      variant={"link"}
+                      onClick={() => {
+                        setDiscount("0");
+                        form.update({
+                          name: fields.discount.name,
+                          value: 1,
+                        });
+                        setApplyDiscount(!applyDiscount);
+                      }}
+                    >
+                      <XIcon />
+                    </Button>
+                  </div>
+                )}
+              </div>
+
               <div className="flex justify-between py-2 border-t">
                 <span>{`Total (${currency})`}</span>
                 <span className="font-bold">
-                  {formatCurrency(getSubTotal(), currency)}
+                  {formatCurrency(getTotal(), currency)}
                 </span>
                 <input
                   type="hidden"
                   name={fields.total.name}
-                  value={getSubTotal()}
+                  value={getTotal()}
                 />
               </div>
             </div>

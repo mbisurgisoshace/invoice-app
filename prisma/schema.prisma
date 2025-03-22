@@ -115,6 +115,7 @@ model Invoice {
   userId        String?
   invoiceName   String
   total         Decimal
+  discount      Decimal       @default(0)
   status        InvoiceStatus
   date          DateTime
   dueDate       Int

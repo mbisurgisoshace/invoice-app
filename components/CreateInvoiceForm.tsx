@@ -9,7 +9,7 @@ import {
 } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { useActionState, useState } from "react";
-import { CalendarIcon, MinusIcon } from "lucide-react";
+import { CalendarIcon, MinusIcon, XIcon } from "lucide-react";
 
 import {
   Select,
@@ -70,6 +70,8 @@ export function CreateInvoiceForm({
     shouldRevalidate: "onInput",
   });
 
+  const [discount, setDiscount] = useState<string>("0");
+  const [applyDiscount, setApplyDiscount] = useState(false);
   const [applySameRate, setApplySameRate] = useState(false);
   const [invoiceCode, setInvoiceCode] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -114,6 +116,17 @@ export function CreateInvoiceForm({
     });
 
     return total;
+  };
+
+  const getTotal = () => {
+    let discountValue = 0;
+    const subtotal = getSubTotal();
+
+    if (applyDiscount) {
+      discountValue = parseFloat(discount);
+    }
+
+    return subtotal - discountValue;
   };
 
   const onImportData = (importedData: ImportedData[]) => {
@@ -478,7 +491,7 @@ export function CreateInvoiceForm({
 
             <div className="grid grid-cols-12 gap-4 mb-2 font-medium">
               <p className="col-span-6 text-right">Total Quantity</p>
-              <p className="col-span-2 ">{getTotalQuantity()}</p>
+              <p className="col-span-2 ">{getTotalQuantity().toFixed(2)}</p>
               <p className="col-span-2" />
               <p className="col-span-2" />
             </div>
@@ -499,16 +512,51 @@ export function CreateInvoiceForm({
                 <span>Subtotal</span>
                 <span>{formatCurrency(getSubTotal(), currency)}</span>
               </div>
-
+              <div>
+                {!applyDiscount ? (
+                  <Button
+                    size={"sm"}
+                    variant={"link"}
+                    onClick={() => setApplyDiscount(!applyDiscount)}
+                  >
+                    + Discount
+                  </Button>
+                ) : (
+                  <div className="flex  py-2 items-center">
+                    <span>Discount</span>
+                    <Input
+                      //type="number"
+                      placeholder="0"
+                      value={discount}
+                      className="ml-4 text-right"
+                      onChange={(e) => setDiscount(e.target.value)}
+                      {...getInputProps(fields.discount, { type: "text" })}
+                      key={fields.discount.key}
+                      //name={quantity.name}
+                    />
+                    <Button
+                      size="icon"
+                      className="ml-2"
+                      variant={"link"}
+                      onClick={() => {
+                        setDiscount("0");
+                        setApplyDiscount(!applyDiscount);
+                      }}
+                    >
+                      <XIcon />
+                    </Button>
+                  </div>
+                )}
+              </div>
               <div className="flex justify-between py-2 border-t">
                 <span>{`Total (${currency})`}</span>
                 <span className="font-bold">
-                  {formatCurrency(getSubTotal(), currency)}
+                  {formatCurrency(getTotal(), currency)}
                 </span>
                 <input
                   type="hidden"
                   name={fields.total.name}
-                  value={getSubTotal()}
+                  value={getTotal()}
                 />
               </div>
             </div>

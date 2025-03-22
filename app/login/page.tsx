@@ -27,7 +27,8 @@ export default async function Login() {
           <CardHeader>
             <CardTitle className="text-2xl">Login</CardTitle>
             <CardDescription>
-              Enter your email below to login into your account
+              Enter your email below to login into your account using a magic
+              link.
             </CardDescription>
           </CardHeader>
           <CardContent>
