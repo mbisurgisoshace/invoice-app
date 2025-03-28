@@ -131,7 +131,7 @@ export async function updateInvoice(prevState: any, formData: FormData) {
       invoiceNumber: submission.value.invoiceNumber,
       status: submission.value.status,
       total: submission.value.total,
-      discountType: submission.value.discountType,
+      discountType: submission.value.discountType || null,
       discount: submission.value.discount || 0,
       note: submission.value.note,
       userId: session.user?.id,

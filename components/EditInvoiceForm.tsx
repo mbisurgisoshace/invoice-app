@@ -55,7 +55,7 @@ export function EditInvoiceForm({ invoice, customers }: EditInvoiceFormProps) {
     invoice.discountType || "FIXED"
   );
   const [discount, setDiscount] = useState<string>(invoice.discount.toString());
-  const [applyDiscount, setApplyDiscount] = useState(!!invoice.discount);
+  const [applyDiscount, setApplyDiscount] = useState(!!invoice.discountType);
   const [invoiceCode, setInvoiceCode] = useState<string>(invoice.invoiceCode);
   const [customerName, setCustomerName] = useState<string>(invoice.clientName);
   const [customerEmail, setCustomerEmail] = useState<string>(
@@ -467,17 +467,17 @@ export function EditInvoiceForm({ invoice, customers }: EditInvoiceFormProps) {
                       </span>
                       <Input
                         placeholder="0"
-                        value={discount}
                         className="w-full text-right rounded-r-md rounded-l-none"
                         onChange={(e) => setDiscount(e.target.value)}
                         {...getInputProps(fields.discount, { type: "text" })}
+                        value={discount}
                         key={fields.discount.key}
                       />
                       <input
                         hidden
                         readOnly
-                        value={discountType}
                         name={fields.discountType.name}
+                        value={applyDiscount ? discountType : undefined}
                       />
                     </div>
                     <Button
@@ -486,9 +486,10 @@ export function EditInvoiceForm({ invoice, customers }: EditInvoiceFormProps) {
                       variant={"link"}
                       onClick={() => {
                         setDiscount("0");
+                        setDiscountType("FIXED");
                         form.update({
                           name: fields.discount.name,
-                          value: 1,
+                          value: 0,
                         });
                         setApplyDiscount(!applyDiscount);
                       }}
