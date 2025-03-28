@@ -22,3 +22,16 @@ export function paginateInvoiceLineItems(
     return acc;
   }, []);
 }
+
+export function calculateDiscountValue(
+  invoiceSubtotal: number,
+  discountType: "FIXED" | "PERCENTAGE",
+  discountValue: number
+) {
+  if (discountType === "FIXED") {
+    return discountValue;
+  } else if (discountType === "PERCENTAGE") {
+    return (invoiceSubtotal * discountValue) / 100;
+  }
+  return 0;
+}

@@ -35,6 +35,7 @@ export async function GET(
       total: true,
       note: true,
       items: true,
+      discount: true,
     },
   });
 
@@ -51,7 +52,6 @@ export async function GET(
   pdf.setFont("helvetica");
 
   const paginatedItems = paginateInvoiceLineItems(data.items, 10);
-  console.log("paginatedItems", paginatedItems);
 
   paginatedItems.forEach((items, index) => {
     pdf.setFont("helvetica", "normal");
@@ -139,12 +139,22 @@ export async function GET(
     pdf.line(20, y, 190, y);
 
     if (index === paginatedItems.length - 1) {
+      // Discount Section
+      if (data.discount) {
+        pdf.text(`Discount (${data.currency})`, 130, y + 10);
+        pdf.text(
+          formatCurrency(Number(data.discount), data.currency as any),
+          160,
+          y + 10
+        );
+      }
+
       // Notes Section
       if (data.note) {
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(10);
-        pdf.text("Note:", 20, y + 10);
-        pdf.text(data.note, 20, y + 15);
+        pdf.text("Note:", 20, y + 20);
+        pdf.text(data.note, 20, y + 25);
       }
     }
 

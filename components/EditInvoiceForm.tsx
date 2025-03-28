@@ -23,7 +23,7 @@ import { Card, CardContent } from "./ui/card";
 import { SubmitButton } from "./SubmitButton";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
-import { formatCurrency } from "@/app/utils/utils";
+import { calculateDiscountValue, formatCurrency } from "@/app/utils/utils";
 import { updateInvoice } from "@/app/actions/actions";
 import { updateInvoiceSchema } from "@/app/utils/schemas";
 
@@ -51,6 +51,9 @@ export function EditInvoiceForm({ invoice, customers }: EditInvoiceFormProps) {
     },
   });
 
+  const [discountType, setDiscountType] = useState<"FIXED" | "PERCENTAGE">(
+    invoice.discountType || "FIXED"
+  );
   const [discount, setDiscount] = useState<string>(invoice.discount.toString());
   const [applyDiscount, setApplyDiscount] = useState(!!invoice.discount);
   const [invoiceCode, setInvoiceCode] = useState<string>(invoice.invoiceCode);
@@ -111,10 +114,22 @@ export function EditInvoiceForm({ invoice, customers }: EditInvoiceFormProps) {
     const subtotal = getSubTotal();
 
     if (applyDiscount) {
-      discountValue = parseFloat(discount);
+      discountValue = calculateDiscountValue(
+        subtotal,
+        discountType,
+        parseFloat(discount)
+      );
     }
 
     return subtotal - discountValue;
+  };
+
+  const onSwitchDiscountType = () => {
+    if (discountType === "FIXED") {
+      setDiscountType("PERCENTAGE");
+    } else {
+      setDiscountType("FIXED");
+    }
   };
 
   return (
@@ -442,15 +457,29 @@ export function EditInvoiceForm({ invoice, customers }: EditInvoiceFormProps) {
                   </Button>
                 ) : (
                   <div className="flex  py-2 items-center">
-                    <span>Discount</span>
-                    <Input
-                      placeholder="0"
-                      value={discount}
-                      className="ml-4 text-right"
-                      onChange={(e) => setDiscount(e.target.value)}
-                      {...getInputProps(fields.discount, { type: "text" })}
-                      key={fields.discount.key}
-                    />
+                    <span className="mr-2">Discount</span>
+                    <div className="flex items-center">
+                      <span
+                        onClick={onSwitchDiscountType}
+                        className="size-9 font-semibold cursor-pointer flex items-center justify-center text-muted-foreground bg-slate-200 rounded-l-md"
+                      >
+                        {discountType === "FIXED" ? "$" : "%"}
+                      </span>
+                      <Input
+                        placeholder="0"
+                        value={discount}
+                        className="w-full text-right rounded-r-md rounded-l-none"
+                        onChange={(e) => setDiscount(e.target.value)}
+                        {...getInputProps(fields.discount, { type: "text" })}
+                        key={fields.discount.key}
+                      />
+                      <input
+                        hidden
+                        readOnly
+                        value={discountType}
+                        name={fields.discountType.name}
+                      />
+                    </div>
                     <Button
                       size="icon"
                       className="ml-2"

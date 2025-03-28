@@ -109,12 +109,18 @@ enum InvoiceStatus {
   PENDING
 }
 
+enum DiscountType {
+  FIXED
+  PERCENTAGE
+}
+
 model Invoice {
   id            String        @id @default(uuid())
   customerId    String?
   userId        String?
   invoiceName   String
   total         Decimal
+  discountType  DiscountType?
   discount      Decimal       @default(0)
   status        InvoiceStatus
   date          DateTime

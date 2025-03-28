@@ -28,7 +28,7 @@ import { Checkbox } from "./ui/checkbox";
 import { Card, CardContent } from "./ui/card";
 import { SubmitButton } from "./SubmitButton";
 
-import { formatCurrency } from "@/app/utils/utils";
+import { calculateDiscountValue, formatCurrency } from "@/app/utils/utils";
 import { createInvoice } from "@/app/actions/actions";
 import { createInvoiceSchema } from "@/app/utils/schemas";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
@@ -77,6 +77,9 @@ export function CreateInvoiceForm({
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [customerName, setCustomerName] = useState<string | undefined>();
   const [currency, setSelectedCurrency] = useState<"USD" | "EUR">("USD");
+  const [discountType, setDiscountType] = useState<"FIXED" | "PERCENTAGE">(
+    "FIXED"
+  );
   const [customerEmail, setCustomerEmail] = useState<string | undefined>();
   const [customerAddress, setCustomerAddress] = useState<string | undefined>();
   const [selectedCustomer, setSelectedCustomer] = useState<
@@ -123,7 +126,11 @@ export function CreateInvoiceForm({
     const subtotal = getSubTotal();
 
     if (applyDiscount) {
-      discountValue = parseFloat(discount);
+      discountValue = calculateDiscountValue(
+        subtotal,
+        discountType,
+        parseFloat(discount)
+      );
     }
 
     return subtotal - discountValue;
@@ -138,6 +145,14 @@ export function CreateInvoiceForm({
         rate: 0,
       })),
     });
+  };
+
+  const onSwitchDiscountType = () => {
+    if (discountType === "FIXED") {
+      setDiscountType("PERCENTAGE");
+    } else {
+      setDiscountType("FIXED");
+    }
   };
 
   const getRateValue = (
@@ -523,17 +538,31 @@ export function CreateInvoiceForm({
                   </Button>
                 ) : (
                   <div className="flex  py-2 items-center">
-                    <span>Discount</span>
-                    <Input
-                      //type="number"
-                      placeholder="0"
-                      value={discount}
-                      className="ml-4 text-right"
-                      onChange={(e) => setDiscount(e.target.value)}
-                      {...getInputProps(fields.discount, { type: "text" })}
-                      key={fields.discount.key}
-                      //name={quantity.name}
-                    />
+                    <span className="mr-2">Discount</span>
+                    <div className="flex items-center">
+                      <span
+                        onClick={onSwitchDiscountType}
+                        className="size-9 font-semibold cursor-pointer flex items-center justify-center text-muted-foreground bg-slate-200 rounded-l-md"
+                      >
+                        {discountType === "FIXED" ? "$" : "%"}
+                      </span>
+                      <Input
+                        //type="number"
+                        placeholder="0"
+                        value={discount}
+                        className="w-full text-right rounded-r-md rounded-l-none"
+                        onChange={(e) => setDiscount(e.target.value)}
+                        {...getInputProps(fields.discount, { type: "text" })}
+                        key={fields.discount.key}
+                        //name={quantity.name}
+                      />
+                      <input
+                        hidden
+                        readOnly
+                        value={discountType}
+                        name={fields.discountType.name}
+                      />
+                    </div>
                     <Button
                       size="icon"
                       className="ml-2"
