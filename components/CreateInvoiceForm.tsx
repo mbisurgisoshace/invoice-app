@@ -9,7 +9,7 @@ import {
 } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { useActionState, useState } from "react";
-import { CalendarIcon, MinusIcon } from "lucide-react";
+import { CalendarIcon, MinusIcon, XIcon } from "lucide-react";
 
 import {
   Select,
@@ -28,7 +28,7 @@ import { Checkbox } from "./ui/checkbox";
 import { Card, CardContent } from "./ui/card";
 import { SubmitButton } from "./SubmitButton";
 
-import { formatCurrency } from "@/app/utils/utils";
+import { calculateDiscountValue, formatCurrency } from "@/app/utils/utils";
 import { createInvoice } from "@/app/actions/actions";
 import { createInvoiceSchema } from "@/app/utils/schemas";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
@@ -70,11 +70,16 @@ export function CreateInvoiceForm({
     shouldRevalidate: "onInput",
   });
 
+  const [discount, setDiscount] = useState<string>("0");
+  const [applyDiscount, setApplyDiscount] = useState(false);
   const [applySameRate, setApplySameRate] = useState(false);
   const [invoiceCode, setInvoiceCode] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [customerName, setCustomerName] = useState<string | undefined>();
   const [currency, setSelectedCurrency] = useState<"USD" | "EUR">("USD");
+  const [discountType, setDiscountType] = useState<"FIXED" | "PERCENTAGE">(
+    "FIXED"
+  );
   const [customerEmail, setCustomerEmail] = useState<string | undefined>();
   const [customerAddress, setCustomerAddress] = useState<string | undefined>();
   const [selectedCustomer, setSelectedCustomer] = useState<
@@ -116,6 +121,21 @@ export function CreateInvoiceForm({
     return total;
   };
 
+  const getTotal = () => {
+    let discountValue = 0;
+    const subtotal = getSubTotal();
+
+    if (applyDiscount) {
+      discountValue = calculateDiscountValue(
+        subtotal,
+        discountType,
+        parseFloat(discount)
+      );
+    }
+
+    return subtotal - discountValue;
+  };
+
   const onImportData = (importedData: ImportedData[]) => {
     form.update({
       name: fields.items.name,
@@ -125,6 +145,14 @@ export function CreateInvoiceForm({
         rate: 0,
       })),
     });
+  };
+
+  const onSwitchDiscountType = () => {
+    if (discountType === "FIXED") {
+      setDiscountType("PERCENTAGE");
+    } else {
+      setDiscountType("FIXED");
+    }
   };
 
   const getRateValue = (
@@ -478,7 +506,7 @@ export function CreateInvoiceForm({
 
             <div className="grid grid-cols-12 gap-4 mb-2 font-medium">
               <p className="col-span-6 text-right">Total Quantity</p>
-              <p className="col-span-2 ">{getTotalQuantity()}</p>
+              <p className="col-span-2 ">{getTotalQuantity().toFixed(2)}</p>
               <p className="col-span-2" />
               <p className="col-span-2" />
             </div>
@@ -499,16 +527,65 @@ export function CreateInvoiceForm({
                 <span>Subtotal</span>
                 <span>{formatCurrency(getSubTotal(), currency)}</span>
               </div>
-
+              <div>
+                {!applyDiscount ? (
+                  <Button
+                    size={"sm"}
+                    variant={"link"}
+                    onClick={() => setApplyDiscount(!applyDiscount)}
+                  >
+                    + Discount
+                  </Button>
+                ) : (
+                  <div className="flex  py-2 items-center">
+                    <span className="mr-2">Discount</span>
+                    <div className="flex items-center">
+                      <span
+                        onClick={onSwitchDiscountType}
+                        className="size-9 font-semibold cursor-pointer flex items-center justify-center text-muted-foreground bg-slate-200 rounded-l-md"
+                      >
+                        {discountType === "FIXED" ? "$" : "%"}
+                      </span>
+                      <Input
+                        //type="number"
+                        placeholder="0"
+                        value={discount}
+                        className="w-full text-right rounded-r-md rounded-l-none"
+                        onChange={(e) => setDiscount(e.target.value)}
+                        {...getInputProps(fields.discount, { type: "text" })}
+                        key={fields.discount.key}
+                        //name={quantity.name}
+                      />
+                      <input
+                        hidden
+                        readOnly
+                        value={discountType}
+                        name={fields.discountType.name}
+                      />
+                    </div>
+                    <Button
+                      size="icon"
+                      className="ml-2"
+                      variant={"link"}
+                      onClick={() => {
+                        setDiscount("0");
+                        setApplyDiscount(!applyDiscount);
+                      }}
+                    >
+                      <XIcon />
+                    </Button>
+                  </div>
+                )}
+              </div>
               <div className="flex justify-between py-2 border-t">
                 <span>{`Total (${currency})`}</span>
                 <span className="font-bold">
-                  {formatCurrency(getSubTotal(), currency)}
+                  {formatCurrency(getTotal(), currency)}
                 </span>
                 <input
                   type="hidden"
                   name={fields.total.name}
-                  value={getSubTotal()}
+                  value={getTotal()}
                 />
               </div>
             </div>

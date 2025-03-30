@@ -3,7 +3,12 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/app/utils/db";
 import { requireUser } from "@/app/utils/hooks";
-import { formatCurrency, paginateInvoiceLineItems } from "@/app/utils/utils";
+import {
+  calculateDiscountValue,
+  calculateInvoiceSubtotal,
+  formatCurrency,
+  paginateInvoiceLineItems,
+} from "@/app/utils/utils";
 
 export async function GET(
   request: Request,
@@ -35,6 +40,8 @@ export async function GET(
       total: true,
       note: true,
       items: true,
+      discount: true,
+      discountType: true,
     },
   });
 
@@ -51,7 +58,8 @@ export async function GET(
   pdf.setFont("helvetica");
 
   const paginatedItems = paginateInvoiceLineItems(data.items, 10);
-  console.log("paginatedItems", paginatedItems);
+
+  const subtotal = calculateInvoiceSubtotal(data.items);
 
   paginatedItems.forEach((items, index) => {
     pdf.setFont("helvetica", "normal");
@@ -139,12 +147,54 @@ export async function GET(
     pdf.line(20, y, 190, y);
 
     if (index === paginatedItems.length - 1) {
+      // Discount Section
+      if (data.discount) {
+        pdf.text(`Subtotal Before Discount`, 110, y + 10);
+
+        pdf.text(
+          formatCurrency(Number(subtotal), data.currency as any),
+          160,
+          y + 10
+        );
+
+        pdf.text(
+          `Discount (${data.discountType === "FIXED" ? data.currency : "%"}) `,
+          110,
+          y + 20
+        );
+
+        pdf.text(
+          formatCurrency(
+            Number(
+              calculateDiscountValue(
+                subtotal,
+                data.discountType!,
+                Number(data.discount)
+              )
+            ),
+            data.currency as any
+          ),
+          160,
+          y + 20
+        );
+
+        pdf.setFont("helvetica", "bold");
+
+        pdf.text(`Total After Discount`, 110, y + 30);
+
+        pdf.text(
+          formatCurrency(Number(data.total), data.currency as any),
+          160,
+          y + 30
+        );
+      }
+
       // Notes Section
       if (data.note) {
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(10);
-        pdf.text("Note:", 20, y + 10);
-        pdf.text(data.note, 20, y + 15);
+        pdf.text("Note:", 20, y + 20);
+        pdf.text(data.note, 20, y + 25);
       }
     }
 
