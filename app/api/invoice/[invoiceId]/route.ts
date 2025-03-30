@@ -129,7 +129,7 @@ export async function GET(
 
     items.forEach((item, index) => {
       pdf.text(item.description, 20, y, { maxWidth: 75 });
-      pdf.text(item.quantity.toString(), 100, y);
+      pdf.text(item.quantity.toFixed(2), 100, y);
       pdf.text(formatCurrency(Number(item.rate), data.currency as any), 130, y);
       pdf.text(
         formatCurrency(
@@ -148,7 +148,7 @@ export async function GET(
 
     if (index === paginatedItems.length - 1) {
       // Discount Section
-      if (data.discount) {
+      if (data.discountType) {
         pdf.text(`Subtotal Before Discount`, 110, y + 10);
 
         pdf.text(
