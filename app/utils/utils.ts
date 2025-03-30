@@ -23,6 +23,13 @@ export function paginateInvoiceLineItems(
   }, []);
 }
 
+export function calculateInvoiceSubtotal(invoiceItems: InvoiceItem[]) {
+  return invoiceItems.reduce((acc, item) => {
+    const itemTotal = item.quantity.toNumber() * item.rate.toNumber();
+    return acc + itemTotal;
+  }, 0);
+}
+
 export function calculateDiscountValue(
   invoiceSubtotal: number,
   discountType: "FIXED" | "PERCENTAGE",

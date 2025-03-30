@@ -3,7 +3,12 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/app/utils/db";
 import { requireUser } from "@/app/utils/hooks";
-import { formatCurrency, paginateInvoiceLineItems } from "@/app/utils/utils";
+import {
+  calculateDiscountValue,
+  calculateInvoiceSubtotal,
+  formatCurrency,
+  paginateInvoiceLineItems,
+} from "@/app/utils/utils";
 
 export async function GET(
   request: Request,
@@ -36,6 +41,7 @@ export async function GET(
       note: true,
       items: true,
       discount: true,
+      discountType: true,
     },
   });
 
@@ -52,6 +58,8 @@ export async function GET(
   pdf.setFont("helvetica");
 
   const paginatedItems = paginateInvoiceLineItems(data.items, 10);
+
+  const subtotal = calculateInvoiceSubtotal(data.items);
 
   paginatedItems.forEach((items, index) => {
     pdf.setFont("helvetica", "normal");
@@ -141,11 +149,43 @@ export async function GET(
     if (index === paginatedItems.length - 1) {
       // Discount Section
       if (data.discount) {
-        pdf.text(`Discount (${data.currency})`, 130, y + 10);
+        pdf.text(`Subtotal Before Discount`, 110, y + 10);
+
         pdf.text(
-          formatCurrency(Number(data.discount), data.currency as any),
+          formatCurrency(Number(subtotal), data.currency as any),
           160,
           y + 10
+        );
+
+        pdf.text(
+          `Discount (${data.discountType === "FIXED" ? data.currency : "%"}) `,
+          110,
+          y + 20
+        );
+
+        pdf.text(
+          formatCurrency(
+            Number(
+              calculateDiscountValue(
+                subtotal,
+                data.discountType!,
+                Number(data.discount)
+              )
+            ),
+            data.currency as any
+          ),
+          160,
+          y + 20
+        );
+
+        pdf.setFont("helvetica", "bold");
+
+        pdf.text(`Total After Discount`, 110, y + 30);
+
+        pdf.text(
+          formatCurrency(Number(data.total), data.currency as any),
+          160,
+          y + 30
         );
       }
 
