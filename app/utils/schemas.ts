@@ -30,7 +30,7 @@ export const createInvoiceSchema = z.object({
   items: z.array(
     z.object({
       description: z.string().min(1, "Description is required"),
-      quantity: z.number().min(1, "Quantity minimum is 1"),
+      quantity: z.number().min(0, "Quantity minimum is 1"),
       rate: z.number().min(1, "Rate minimum is 1"),
     })
   ),
@@ -61,7 +61,7 @@ export const updateInvoiceSchema = z.object({
     z.object({
       id: z.string().optional(),
       description: z.string().min(1, "Description is required"),
-      quantity: z.number().min(1, "Quantity minimum is 1"),
+      quantity: z.number().min(0, "Quantity minimum is 1"),
       rate: z.number().min(1, "Rate minimum is 1"),
     })
   ),
