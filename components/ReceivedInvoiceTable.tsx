@@ -1,5 +1,3 @@
-import { prisma } from "@/app/utils/db";
-import { InvoiceTableActions } from "./InvoiceTableActions";
 import {
   Table,
   TableRow,
@@ -8,9 +6,12 @@ import {
   TableBody,
   TableHeader,
 } from "./ui/table";
+import { Badge } from "./ui/badge";
+
+import { prisma } from "@/app/utils/db";
 import { requireUser } from "@/app/utils/hooks";
 import { formatCurrency } from "@/app/utils/utils";
-import { Badge } from "./ui/badge";
+import { ReceivedInvoiceTableActions } from "./ReceivedInvoiceTableActions";
 
 export async function ReceivedInvoiceTable() {
   const session = await requireUser();
@@ -44,6 +45,7 @@ export async function ReceivedInvoiceTable() {
           <TableHead>Amount</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Date</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -67,6 +69,9 @@ export async function ReceivedInvoiceTable() {
               {new Intl.DateTimeFormat("en-US", {
                 dateStyle: "medium",
               }).format(invoice.date)}
+            </TableCell>
+            <TableCell className="text-right">
+              <ReceivedInvoiceTableActions invoiceId={invoice.id} />
             </TableCell>
           </TableRow>
         ))}
