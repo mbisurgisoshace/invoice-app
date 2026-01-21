@@ -85,11 +85,8 @@ export default async function DashboardLayout({
             <div className="flex items-center ml-auto">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    className="rounded-full"
-                    variant={"outline"}
-                    size={"icon"}
-                  >
+                  <Button className="rounded-full" variant={"outline"}>
+                    {`${(session.user as any).firstName} ${(session.user as any).lastName}`}
                     <User2Icon />
                   </Button>
                 </DropdownMenuTrigger>

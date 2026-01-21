@@ -25,6 +25,7 @@ export async function ReceivedInvoiceTable() {
       date: true,
       total: true,
       status: true,
+      fromName: true,
       currency: true,
       createdAt: true,
       clientName: true,
@@ -54,7 +55,7 @@ export async function ReceivedInvoiceTable() {
             <TableCell>
               # {invoice.invoiceCode} {invoice.invoiceNumber}
             </TableCell>
-            <TableCell>{invoice.clientName}</TableCell>
+            <TableCell>{invoice.fromName}</TableCell>
             <TableCell>
               {formatCurrency(Number(invoice.total), invoice.currency as any)}
             </TableCell>
