@@ -1,4 +1,13 @@
-import { ActivityIcon, CreditCard, DollarSign, UsersIcon } from "lucide-react";
+import {
+  ActivityIcon,
+  CheckCircle2Icon,
+  ClockIcon,
+  CreditCard,
+  DollarSign,
+  DollarSignIcon,
+  FileTextIcon,
+  UsersIcon,
+} from "lucide-react";
 
 import { prisma } from "@/app/utils/db";
 import { requireUser } from "@/app/utils/hooks";
@@ -42,63 +51,97 @@ export async function DashboardBlocks() {
   ]);
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 md:gap-8">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-          <DollarSign className="size-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <h2 className="text-2xl font-bold">
-            {formatCurrency(
-              data.reduce((acc, invoice) => acc + Number(invoice.total), 0),
-              "USD"
-            )}
-          </h2>
-          <p className="text-xs text-muted-foreground">
-            Based on the last 30 days
-          </p>
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <Card className="border-border/60 shadow-none transition-shadow hover:shadow-md">
+        <CardContent className="p-5">
+          <div className="flex items-start justify-between">
+            <div className="flex flex-col gap-1">
+              <p className="text-sm font-medium text-muted-foreground">
+                Total Revenue
+              </p>
+              <p className="text-2xl font-bold tracking-tight text-foreground">
+                {formatCurrency(
+                  data.reduce((acc, invoice) => acc + Number(invoice.total), 0),
+                  "USD",
+                )}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Based on the last 30 days
+              </p>
+            </div>
+            <div
+              className={`flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10`}
+            >
+              <DollarSignIcon className={`h-5 w-5 text-primary`} />
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            Total Invoices Issued
-          </CardTitle>
-          <UsersIcon className="size-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <h2 className="text-2xl font-bold">{`+${data.length}`}</h2>
-          <p className="text-xs text-muted-foreground">Total invoices issued</p>
+      <Card className="border-border/60 shadow-none transition-shadow hover:shadow-md">
+        <CardContent className="p-5">
+          <div className="flex items-start justify-between">
+            <div className="flex flex-col gap-1">
+              <p className="text-sm font-medium text-muted-foreground">
+                Invoices Issued
+              </p>
+              <p className="text-2xl font-bold tracking-tight text-foreground">
+                {`${data.length}`}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Total invoices issued
+              </p>
+            </div>
+            <div
+              className={`flex h-10 w-10 items-center justify-center rounded-lg bg-chart-4/10`}
+            >
+              <FileTextIcon className={`h-5 w-5 text-chart-4`} />
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Paid Invoices</CardTitle>
-          <CreditCard className="size-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <h2 className="text-2xl font-bold">{`+${paidInvoices.length}`}</h2>
-          <p className="text-xs text-muted-foreground">
-            Total invoices which have been paid
-          </p>
+      <Card className="border-border/60 shadow-none transition-shadow hover:shadow-md">
+        <CardContent className="p-5">
+          <div className="flex items-start justify-between">
+            <div className="flex flex-col gap-1">
+              <p className="text-sm font-medium text-muted-foreground">
+                Paid Invoices
+              </p>
+              <p className="text-2xl font-bold tracking-tight text-foreground">
+                {`${paidInvoices.length}`}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Total invoices paid
+              </p>
+            </div>
+            <div
+              className={`flex h-10 w-10 items-center justify-center rounded-lg bg-success/10`}
+            >
+              <CheckCircle2Icon className={`h-5 w-5 text-success`} />
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            Pending Invoices
-          </CardTitle>
-          <ActivityIcon className="size-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <h2 className="text-2xl font-bold">{`+${pendingInvoices.length}`}</h2>
-          <p className="text-xs text-muted-foreground">
-            Invoices which are currently pending
-          </p>
+      <Card className="border-border/60 shadow-none transition-shadow hover:shadow-md">
+        <CardContent className="p-5">
+          <div className="flex items-start justify-between">
+            <div className="flex flex-col gap-1">
+              <p className="text-sm font-medium text-muted-foreground">
+                Pending
+              </p>
+              <p className="text-2xl font-bold tracking-tight text-foreground">
+                {`${pendingInvoices.length}`}
+              </p>
+              <p className="text-xs text-muted-foreground">Currently pending</p>
+            </div>
+            <div
+              className={`flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10`}
+            >
+              <ClockIcon className={`h-5 w-5 text-warning`} />
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
