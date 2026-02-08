@@ -54,14 +54,14 @@ export async function InvoiceChart() {
     .map(({ date, amount }) => ({ date, amount }));
 
   return (
-    <Card className="border-border/60 shadow-none">
+    <Card className="border-border/60 shadow-none h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-semibold text-foreground">
           Paid Invoices
         </CardTitle>
         <CardDescription>Revenue from paid invoices over time</CardDescription>
       </CardHeader>
-      <CardContent className="pt-2">
+      <CardContent className="pt-2 mt-6">
         <div className="h-[280px] w-full">
           <Chart data={aggregatedDataArray} />
         </div>
