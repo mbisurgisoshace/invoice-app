@@ -15,10 +15,10 @@ export async function InvoiceChart() {
     where: {
       userId: session.user?.id,
       status: "PAID",
-      createdAt: {
-        lte: new Date(),
-        gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-      },
+      // createdAt: {
+      //   lte: new Date(),
+      //   gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      // },
     },
     select: {
       total: true,
@@ -27,6 +27,7 @@ export async function InvoiceChart() {
     orderBy: {
       payedDate: "asc",
     },
+    take: 20,
   });
 
   const aggregatedData = rawData.reduce(
@@ -40,7 +41,7 @@ export async function InvoiceChart() {
 
       return acc;
     },
-    {}
+    {},
   );
 
   const aggregatedDataArray = Object.entries(aggregatedData)
@@ -53,16 +54,21 @@ export async function InvoiceChart() {
     .map(({ date, amount }) => ({ date, amount }));
 
   return (
-    <Card className="lg:col-span-2">
-      <CardHeader>
-        <CardTitle>Paid Invoices</CardTitle>
-        <CardDescription>
-          Invoices which have been paid in the last 30 days.
-        </CardDescription>
+    <Card className="border-border/60 shadow-none">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base font-semibold text-foreground">
+          Paid Invoices
+        </CardTitle>
+        <CardDescription>Revenue from paid invoices over time</CardDescription>
       </CardHeader>
-      <CardContent>
-        <Chart data={aggregatedDataArray} />
+      <CardContent className="pt-2">
+        <div className="h-[280px] w-full">
+          <Chart data={aggregatedDataArray} />
+        </div>
       </CardContent>
+      {/* <CardContent>
+        <Chart data={aggregatedDataArray} />
+      </CardContent> */}
     </Card>
   );
 }
