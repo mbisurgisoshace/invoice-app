@@ -9,7 +9,6 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
-import { InvoiceTable } from "@/components/InvoiceTable";
 import { CustomerTable } from "@/components/CustomerTable";
 
 export default function Customers() {
