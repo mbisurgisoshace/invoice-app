@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/app/utils/db";
 import { requireUser } from "@/app/utils/hooks";
 import { EditInvoiceForm } from "@/components/EditInvoiceForm";
+import { DashboardLayout } from "@/components/AppLayout";
 
 export default async function Invoice({
   params,
@@ -36,9 +37,11 @@ export default async function Invoice({
   if (!data) return notFound();
 
   return (
-    <EditInvoiceForm
-      invoice={JSON.parse(JSON.stringify(data))}
-      customers={JSON.parse(JSON.stringify(customers))}
-    />
+    <DashboardLayout>
+      <EditInvoiceForm
+        invoice={JSON.parse(JSON.stringify(data))}
+        customers={JSON.parse(JSON.stringify(customers))}
+      />
+    </DashboardLayout>
   );
 }

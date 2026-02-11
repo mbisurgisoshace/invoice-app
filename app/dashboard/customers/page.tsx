@@ -10,26 +10,34 @@ import {
 } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { CustomerTable } from "@/components/CustomerTable";
+import { DashboardLayout } from "@/components/AppLayout";
 
 export default function Customers() {
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-2xl font-bold">Customers</CardTitle>
-            <CardDescription>Manage your customers right here</CardDescription>
-          </div>
+    <DashboardLayout>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl font-bold">Customers</CardTitle>
+              <CardDescription>
+                Manage your customers right here
+              </CardDescription>
+            </div>
 
-          <Link href="/dashboard/customers/create" className={buttonVariants()}>
-            <PlusIcon />
-            Create Customer
-          </Link>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <CustomerTable />
-      </CardContent>
-    </Card>
+            <Link
+              href="/dashboard/customers/create"
+              className={buttonVariants()}
+            >
+              <PlusIcon />
+              Create Customer
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <CustomerTable />
+        </CardContent>
+      </Card>
+    </DashboardLayout>
   );
 }

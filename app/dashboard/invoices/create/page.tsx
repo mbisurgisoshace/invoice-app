@@ -1,5 +1,6 @@
 import { prisma } from "@/app/utils/db";
 import { requireUser } from "@/app/utils/hooks";
+import { DashboardLayout } from "@/components/AppLayout";
 import { CreateInvoiceForm } from "@/components/CreateInvoiceForm";
 
 export default async function CreateInvoice() {
@@ -41,13 +42,15 @@ export default async function CreateInvoice() {
   const nextInvoiceNumber = (lastInvoiceNumber?.invoiceNumber || 0) + 1;
 
   return (
-    <CreateInvoiceForm
-      email={data?.email!}
-      address={data?.address!}
-      lastName={data?.lastName!}
-      firstName={data?.firstName!}
-      nextInvoiceNumber={nextInvoiceNumber}
-      customers={JSON.parse(JSON.stringify(customers))}
-    />
+    <DashboardLayout>
+      <CreateInvoiceForm
+        email={data?.email!}
+        address={data?.address!}
+        lastName={data?.lastName!}
+        firstName={data?.firstName!}
+        nextInvoiceNumber={nextInvoiceNumber}
+        customers={JSON.parse(JSON.stringify(customers))}
+      />
+    </DashboardLayout>
   );
 }

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/app/utils/db";
 import { requireUser } from "@/app/utils/hooks";
 import { EditCustomerForm } from "@/components/EditCustomerForm";
+import { DashboardLayout } from "@/components/AppLayout";
 
 export default async function Customer({
   params,
@@ -22,5 +23,9 @@ export default async function Customer({
 
   if (!data) return notFound();
 
-  return <EditCustomerForm customer={JSON.parse(JSON.stringify(data))} />;
+  return (
+    <DashboardLayout>
+      <EditCustomerForm customer={JSON.parse(JSON.stringify(data))} />
+    </DashboardLayout>
+  );
 }
