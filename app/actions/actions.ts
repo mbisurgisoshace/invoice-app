@@ -13,6 +13,7 @@ import {
   updateInvoiceSchema,
 } from "../utils/schemas";
 import { formatCurrency } from "../utils/utils";
+import { revalidatePath } from "next/cache";
 
 export async function onboardUser(prevState: any, formData: FormData) {
   const session = await requireUser();
@@ -92,7 +93,7 @@ export async function createInvoice(prevState: any, formData: FormData) {
       }).format(new Date(submission.value.date)),
       total: formatCurrency(
         Number(submission.value.total),
-        submission.value.currency as any
+        submission.value.currency as any,
       ),
       invoiceLink: `${process.env.BASE_URL}/api/invoice/${data.id}`,
     },
@@ -161,7 +162,7 @@ export async function updateInvoice(prevState: any, formData: FormData) {
       }).format(new Date(submission.value.date)),
       total: formatCurrency(
         Number(submission.value.total),
-        submission.value.currency as any
+        submission.value.currency as any,
       ),
       invoiceLink: `${process.env.BASE_URL}/api/invoice/${data.id}`,
     },
@@ -180,12 +181,13 @@ export async function deleteInvoice(invoiceId: string) {
     },
   });
 
-  return redirect("/dashboard/invoices");
+  revalidatePath("/dashboard/invoices");
+  //return redirect("/dashboard/invoices");
 }
 
 export async function markInvoiceAsPaid(
   invoiceId: string,
-  paymentDate: string
+  paymentDate: string,
 ) {
   const session = await requireUser();
 
@@ -200,7 +202,8 @@ export async function markInvoiceAsPaid(
     },
   });
 
-  return redirect("/dashboard/invoices");
+  revalidatePath("/dashboard/invoices");
+  //return redirect("/dashboard/invoices");
 }
 
 export async function getLastInvoiceNumber() {

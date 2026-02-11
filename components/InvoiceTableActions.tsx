@@ -36,11 +36,13 @@ import { deleteInvoice, markInvoiceAsPaid } from "@/app/actions/actions";
 interface InvoiceTableActionsProps {
   status: string;
   invoiceId: string;
+  invoiceOwner: boolean;
 }
 
 export default function InvoiceTableActions({
   status,
   invoiceId,
+  invoiceOwner,
 }: InvoiceTableActionsProps) {
   const [paymentDate, setPaymentDate] = useState<Date>(new Date());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -85,23 +87,27 @@ export default function InvoiceTableActions({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem asChild>
-            <Link href={`/dashboard/invoices/${invoiceId}`}>
-              <PencilIcon className="mr-2 h-4 w-4" />
-              Edit Invoice
-            </Link>
-          </DropdownMenuItem>
+          {invoiceOwner && (
+            <DropdownMenuItem asChild>
+              <Link href={`/dashboard/invoices/${invoiceId}`}>
+                <PencilIcon className="mr-2 h-4 w-4" />
+                Edit Invoice
+              </Link>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem asChild>
             <Link href={`/api/invoice/${invoiceId}`} target="_blank">
               <DownloadIcon className="mr-2 h-4 w-4" />
               Download Invoice
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleSentReminder}>
-            <MailIcon className="mr-2 h-4 w-4" />
-            Reminder Email
-          </DropdownMenuItem>
-          {status !== "PAID" && (
+          {invoiceOwner && (
+            <DropdownMenuItem onClick={handleSentReminder}>
+              <MailIcon className="mr-2 h-4 w-4" />
+              Reminder Email
+            </DropdownMenuItem>
+          )}
+          {invoiceOwner && status !== "PAID" && (
             <DropdownMenuItem
               onSelect={() => {
                 setPaymentDate(new Date());
@@ -112,16 +118,20 @@ export default function InvoiceTableActions({
               Mark as Paid
             </DropdownMenuItem>
           )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="text-destructive focus:text-destructive"
-            onSelect={() => {
-              setDeleteDialogOpen(true);
-            }}
-          >
-            <Trash2Icon className="mr-2 h-4 w-4" />
-            Delete Invoice
-          </DropdownMenuItem>
+          {invoiceOwner && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onSelect={() => {
+                  setDeleteDialogOpen(true);
+                }}
+              >
+                <Trash2Icon className="mr-2 h-4 w-4" />
+                Delete Invoice
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 

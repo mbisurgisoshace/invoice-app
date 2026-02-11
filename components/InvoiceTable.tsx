@@ -1,16 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { MoreHorizontal, SearchIcon } from "lucide-react";
+import { SearchIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
-import {
-  DropdownMenu,
-  DropdownMenuItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
 import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
 import InvoiceTableActions from "./InvoiceTableActions";
 
 type Invoice = {
@@ -40,6 +33,10 @@ export function InvoicesTable({
       inv.invoiceNumber.toLowerCase().includes(search.toLowerCase()) ||
       inv.invoiceName.toLowerCase().includes(search.toLowerCase()),
   );
+
+  useEffect(() => {
+    setData(activeTab === "sent" ? sentInvoices : receivedInvoices);
+  }, [sentInvoices, receivedInvoices]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-5">
@@ -166,8 +163,9 @@ export function InvoicesTable({
                     </td>
                     <td className="p-4 align-middle">
                       <InvoiceTableActions
-                        status={invoice.status}
                         invoiceId={invoice.id}
+                        status={invoice.status}
+                        invoiceOwner={activeTab === "sent"}
                       />
                     </td>
                   </tr>
