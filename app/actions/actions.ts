@@ -290,5 +290,6 @@ export async function archiveCustomer(customerId: string) {
     },
   });
 
-  return redirect("/dashboard/customers");
+  revalidatePath("/dashboard/customers");
+  //return redirect("/dashboard/customers");
 }

@@ -92,7 +92,7 @@ model Customer {
   userId      String?
   name        String
   email       String
-  address     String
+  address     String?
   phoneNumber String?
   taxNumber   String?
   invoiceCode String

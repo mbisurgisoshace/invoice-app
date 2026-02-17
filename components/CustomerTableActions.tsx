@@ -1,24 +1,24 @@
 "use client";
 
-import { PencilIcon, ArchiveIcon, MoreHorizontalIcon } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
+import { PencilIcon, Trash2Icon, MoreHorizontalIcon } from "lucide-react";
+import Link from "next/link";
 
 import {
   DropdownMenu,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuContent,
+  DropdownMenuSeparator,
 } from "./ui/dropdown-menu";
-import { Button, buttonVariants } from "./ui/button";
+import { Button } from "./ui/button";
 import {
   AlertDialog,
-  AlertDialogFooter,
   AlertDialogTitle,
+  AlertDialogFooter,
   AlertDialogAction,
   AlertDialogHeader,
   AlertDialogCancel,
-  AlertDialogTrigger,
   AlertDialogContent,
   AlertDialogDescription,
 } from "@/components/ui/alert-dialog";
@@ -28,18 +28,50 @@ interface CustomerTableActionsProps {
   customerId: string;
 }
 
-export function CustomerTableActions({
+export default function CustomerTableActions({
   customerId,
 }: CustomerTableActionsProps) {
-  const [dialog, setDialog] = useState<string>("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const onArchiveCustomer = async () => {
     await archiveCustomer(customerId);
+    setDeleteDialogOpen(false);
   };
 
-  const renderDialog = () => {
-    if (dialog === "deleteDialog")
-      return (
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+          >
+            <MoreHorizontalIcon className="h-4 w-4 text-muted-foreground" />
+            <span className="sr-only">Open menu</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem asChild>
+            <Link href={`/dashboard/customers/${customerId}`}>
+              <PencilIcon className="mr-2 h-4 w-4" />
+              Edit Customer
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            className="text-destructive focus:text-destructive"
+            onSelect={() => {
+              setDeleteDialogOpen(true);
+            }}
+          >
+            <Trash2Icon className="mr-2 h-4 w-4" />
+            Archive Customer
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
@@ -53,45 +85,13 @@ export function CustomerTableActions({
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={onArchiveCustomer}
-              className={buttonVariants({ variant: "destructive" })}
             >
               Archive
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      );
-  };
-
-  return (
-    <>
-      <AlertDialog>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size={"icon"} variant={"ghost"}>
-              <MoreHorizontalIcon className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link href={`/dashboard/customers/${customerId}`}>
-                <PencilIcon className="size-4 mr-2" />
-                Edit Customer
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              asChild
-              className="w-full"
-              onSelect={() => setDialog("deleteDialog")}
-            >
-              <AlertDialogTrigger>
-                <ArchiveIcon className="size-4 mr-2" />
-                Archive Customer
-              </AlertDialogTrigger>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-          {renderDialog()}
-        </DropdownMenu>
       </AlertDialog>
     </>
   );

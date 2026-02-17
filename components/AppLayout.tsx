@@ -1,16 +1,21 @@
 import React from "react";
 import { AppSidebar } from "./AppSidebar";
+import { requireUser } from "@/app/utils/hooks";
 
-export function DashboardLayout({
+export async function DashboardLayout({
   children,
   fixedHeight = false,
 }: {
   children: React.ReactNode;
   fixedHeight?: boolean;
 }) {
+  const session = await requireUser();
+
   return (
     <div className="flex h-screen">
-      <AppSidebar />
+      <AppSidebar
+        user={`${(session.user as any).firstName} ${(session.user as any).lastName}`}
+      />
       <main
         className={`flex flex-1 flex-col pl-60 ${
           fixedHeight ? "overflow-hidden" : "overflow-y-auto"

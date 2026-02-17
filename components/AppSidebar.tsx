@@ -14,7 +14,11 @@ const navigation = [
   { name: "Invoices", href: "/dashboard/invoices", icon: FileText },
 ];
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  user: string;
+}
+
+export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -59,13 +63,15 @@ export function AppSidebar() {
       <div className="border-t border-border p-4">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
-            MB
+            {user
+              .split(" ")
+              .map((name) => name[0])
+              .join("")}
           </div>
           <div className="flex-1 truncate">
             <p className="truncate text-sm font-medium text-foreground">
-              Maximiliano B.
+              {user}
             </p>
-            <p className="truncate text-xs text-muted-foreground">Free Plan</p>
           </div>
         </div>
       </div>

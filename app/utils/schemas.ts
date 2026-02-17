@@ -32,7 +32,7 @@ export const createInvoiceSchema = z.object({
       description: z.string().min(1, "Description is required"),
       quantity: z.number().min(0, "Quantity minimum is 1"),
       rate: z.number().min(1, "Rate minimum is 1"),
-    })
+    }),
   ),
 });
 
@@ -63,14 +63,14 @@ export const updateInvoiceSchema = z.object({
       description: z.string().min(1, "Description is required"),
       quantity: z.number().min(0, "Quantity minimum is 1"),
       rate: z.number().min(1, "Rate minimum is 1"),
-    })
+    }),
   ),
 });
 
 export const createCustomerSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
-  address: z.string().min(1, "Address is required"),
+  address: z.string().optional(),
   taxNumber: z.string().optional(),
   phoneNumber: z.string().optional(),
   invoiceCode: z
