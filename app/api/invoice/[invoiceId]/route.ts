@@ -16,7 +16,7 @@ export async function GET(
     params,
   }: {
     params: Promise<{ invoiceId: string }>;
-  }
+  },
 ) {
   const { invoiceId } = await params;
 
@@ -83,21 +83,25 @@ export async function GET(
     pdf.setFontSize(12);
     pdf.text("Bill to", 20, 70);
     pdf.setFontSize(10);
-    pdf.text([data.clientName, data.clientEmail, data.clientAddress], 20, 75);
+    pdf.text(
+      [data.clientName, data.clientEmail, data.clientAddress || ""],
+      20,
+      75,
+    );
 
     // Invoice Details
     pdf.setFontSize(10);
     pdf.text(
       `Invoice Number: # ${data.invoiceCode} ${data.invoiceNumber}`,
       120,
-      40
+      40,
     );
     pdf.text(
       `Date: ${new Intl.DateTimeFormat("en-US", {
         dateStyle: "long",
       }).format(data.date)}`,
       120,
-      45
+      45,
     );
     pdf.text(`Due Date: Net ${data.dueDate}`, 120, 50);
 
@@ -106,10 +110,10 @@ export async function GET(
     pdf.text(
       `Total (${data.currency}): ${formatCurrency(
         Number(data.total),
-        data.currency as any
+        data.currency as any,
       )}`,
       120,
-      55
+      55,
     );
 
     // Invoice Items
@@ -134,10 +138,10 @@ export async function GET(
       pdf.text(
         formatCurrency(
           Number(item.rate) * Number(item.quantity),
-          data.currency as any
+          data.currency as any,
         ),
         160,
-        y
+        y,
       );
 
       y += lineGap;
@@ -154,13 +158,13 @@ export async function GET(
         pdf.text(
           formatCurrency(Number(subtotal), data.currency as any),
           160,
-          y + 10
+          y + 10,
         );
 
         pdf.text(
           `Discount (${data.discountType === "FIXED" ? data.currency : "%"}) `,
           110,
-          y + 20
+          y + 20,
         );
 
         pdf.text(
@@ -169,13 +173,13 @@ export async function GET(
               calculateDiscountValue(
                 subtotal,
                 data.discountType!,
-                Number(data.discount)
-              )
+                Number(data.discount),
+              ),
             ),
-            data.currency as any
+            data.currency as any,
           ),
           160,
-          y + 20
+          y + 20,
         );
 
         pdf.setFont("helvetica", "bold");
@@ -185,7 +189,7 @@ export async function GET(
         pdf.text(
           formatCurrency(Number(data.total), data.currency as any),
           160,
-          y + 30
+          y + 30,
         );
       }
 
