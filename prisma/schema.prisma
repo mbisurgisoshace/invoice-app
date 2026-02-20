@@ -131,7 +131,7 @@ model Invoice {
   fromAddress   String
   clientName    String
   clientEmail   String
-  clientAddress String
+  clientAddress String?
   currency      String
   invoiceCode   String        @default("")
   invoiceNumber Int
