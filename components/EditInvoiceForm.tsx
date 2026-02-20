@@ -52,26 +52,26 @@ export function EditInvoiceForm({ invoice, customers }: EditInvoiceFormProps) {
   });
 
   const [discountType, setDiscountType] = useState<"FIXED" | "PERCENTAGE">(
-    invoice.discountType || "FIXED"
+    invoice.discountType || "FIXED",
   );
   const [discount, setDiscount] = useState<string>(invoice.discount.toString());
   const [applyDiscount, setApplyDiscount] = useState(!!invoice.discountType);
   const [invoiceCode, setInvoiceCode] = useState<string>(invoice.invoiceCode);
   const [customerName, setCustomerName] = useState<string>(invoice.clientName);
   const [customerEmail, setCustomerEmail] = useState<string>(
-    invoice.clientEmail
+    invoice.clientEmail,
   );
   const [customerAddress, setCustomerAddress] = useState<string>(
-    invoice.clientAddress
+    invoice.clientAddress || "",
   );
   const [selectedDate, setSelectedDate] = useState<Date>(
-    new Date(invoice.date)
+    new Date(invoice.date),
   );
   const [currency, setSelectedCurrency] = useState<"USD" | "EUR">(
-    invoice.currency as any
+    invoice.currency as any,
   );
   const [selectedCustomer, setSelectedCustomer] = useState<string>(
-    invoice.customerId!
+    invoice.customerId!,
   );
 
   const onSelectCustomer = async (customerId: string) => {
@@ -81,8 +81,8 @@ export function EditInvoiceForm({ invoice, customers }: EditInvoiceFormProps) {
 
     setCustomerName(customer.name);
     setCustomerEmail(customer.email);
-    setCustomerAddress(customer.address);
     setInvoiceCode(customer.invoiceCode);
+    setCustomerAddress(customer.address || "");
   };
 
   const getTotalQuantity = () => {
@@ -117,7 +117,7 @@ export function EditInvoiceForm({ invoice, customers }: EditInvoiceFormProps) {
       discountValue = calculateDiscountValue(
         subtotal,
         discountType,
-        parseFloat(discount)
+        parseFloat(discount),
       );
     }
 
