@@ -78,7 +78,7 @@ export function CreateInvoiceForm({
   const [customerName, setCustomerName] = useState<string | undefined>();
   const [currency, setSelectedCurrency] = useState<"USD" | "EUR">("USD");
   const [discountType, setDiscountType] = useState<"FIXED" | "PERCENTAGE">(
-    "FIXED"
+    "FIXED",
   );
   const [customerEmail, setCustomerEmail] = useState<string | undefined>();
   const [customerAddress, setCustomerAddress] = useState<string | undefined>();
@@ -93,8 +93,8 @@ export function CreateInvoiceForm({
 
     setCustomerName(customer.name);
     setCustomerEmail(customer.email);
-    setCustomerAddress(customer.address);
     setInvoiceCode(customer.invoiceCode);
+    setCustomerAddress(customer.address || "");
   };
 
   const getTotalQuantity = () => {
@@ -129,7 +129,7 @@ export function CreateInvoiceForm({
       discountValue = calculateDiscountValue(
         subtotal,
         discountType,
-        parseFloat(discount)
+        parseFloat(discount),
       );
     }
 
@@ -157,7 +157,7 @@ export function CreateInvoiceForm({
 
   const getRateValue = (
     rateValue: string | undefined,
-    rateSetter: string | undefined
+    rateSetter: string | undefined,
   ) => {
     if (!rateValue || rateValue === "0") {
       return rateSetter;

@@ -85,7 +85,7 @@ export function EditCustomerForm({ customer }: EditCustomerFormProps) {
                   placeholder="Street 123"
                   key={fields.address.key}
                   name={fields.address.name}
-                  defaultValue={customer.address}
+                  defaultValue={customer.address || ""}
                 />
                 <p className="text-red-500 text-sm">{fields.address.errors}</p>
               </div>
