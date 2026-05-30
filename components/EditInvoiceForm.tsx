@@ -56,6 +56,12 @@ export function EditInvoiceForm({ invoice, customers }: EditInvoiceFormProps) {
   );
   const [discount, setDiscount] = useState<string>(invoice.discount.toString());
   const [applyDiscount, setApplyDiscount] = useState(!!invoice.discountType);
+  const [amountPaid, setAmountPaid] = useState<string>(
+    invoice.amountPaid?.toString() ?? "0",
+  );
+  const [applyAmountPaid, setApplyAmountPaid] = useState(
+    Number(invoice.amountPaid) > 0,
+  );
   const [invoiceCode, setInvoiceCode] = useState<string>(invoice.invoiceCode);
   const [customerName, setCustomerName] = useState<string>(invoice.clientName);
   const [customerEmail, setCustomerEmail] = useState<string>(
@@ -511,6 +517,59 @@ export function EditInvoiceForm({ invoice, customers }: EditInvoiceFormProps) {
                   value={getTotal()}
                 />
               </div>
+
+              <div>
+                {!applyAmountPaid ? (
+                  <Button
+                    size={"sm"}
+                    variant={"link"}
+                    onClick={() => setApplyAmountPaid(true)}
+                  >
+                    + Amount Paid
+                  </Button>
+                ) : (
+                  <div className="flex py-2 items-center">
+                    <span className="mr-2 whitespace-nowrap">Amount Paid</span>
+                    <div className="flex items-center flex-1">
+                      <Input
+                        placeholder="0"
+                        value={amountPaid}
+                        className="w-full text-right"
+                        onChange={(e) => setAmountPaid(e.target.value)}
+                      />
+                    </div>
+                    <Button
+                      size="icon"
+                      className="ml-2"
+                      variant={"link"}
+                      onClick={() => {
+                        setAmountPaid("0");
+                        setApplyAmountPaid(false);
+                      }}
+                    >
+                      <XIcon />
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {applyAmountPaid && parseFloat(amountPaid || "0") > 0 && (
+                <div className="flex justify-between py-2 border-t">
+                  <span>Balance Due</span>
+                  <span className="font-bold">
+                    {formatCurrency(
+                      getTotal() - parseFloat(amountPaid || "0"),
+                      currency,
+                    )}
+                  </span>
+                </div>
+              )}
+
+              <input
+                type="hidden"
+                name={fields.amountPaid.name}
+                value={applyAmountPaid ? parseFloat(amountPaid || "0") : 0}
+              />
             </div>
           </div>
 

@@ -72,6 +72,8 @@ export function CreateInvoiceForm({
 
   const [discount, setDiscount] = useState<string>("0");
   const [applyDiscount, setApplyDiscount] = useState(false);
+  const [amountPaid, setAmountPaid] = useState<string>("0");
+  const [applyAmountPaid, setApplyAmountPaid] = useState(false);
   const [applySameRate, setApplySameRate] = useState(false);
   const [invoiceCode, setInvoiceCode] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -588,6 +590,59 @@ export function CreateInvoiceForm({
                   value={getTotal()}
                 />
               </div>
+
+              <div>
+                {!applyAmountPaid ? (
+                  <Button
+                    size={"sm"}
+                    variant={"link"}
+                    onClick={() => setApplyAmountPaid(true)}
+                  >
+                    + Amount Paid
+                  </Button>
+                ) : (
+                  <div className="flex py-2 items-center">
+                    <span className="mr-2 whitespace-nowrap">Amount Paid</span>
+                    <div className="flex items-center flex-1">
+                      <Input
+                        placeholder="0"
+                        value={amountPaid}
+                        className="w-full text-right"
+                        onChange={(e) => setAmountPaid(e.target.value)}
+                      />
+                    </div>
+                    <Button
+                      size="icon"
+                      className="ml-2"
+                      variant={"link"}
+                      onClick={() => {
+                        setAmountPaid("0");
+                        setApplyAmountPaid(false);
+                      }}
+                    >
+                      <XIcon />
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {applyAmountPaid && parseFloat(amountPaid || "0") > 0 && (
+                <div className="flex justify-between py-2 border-t">
+                  <span>Balance Due</span>
+                  <span className="font-bold">
+                    {formatCurrency(
+                      getTotal() - parseFloat(amountPaid || "0"),
+                      currency,
+                    )}
+                  </span>
+                </div>
+              )}
+
+              <input
+                type="hidden"
+                name={fields.amountPaid.name}
+                value={applyAmountPaid ? parseFloat(amountPaid || "0") : 0}
+              />
             </div>
           </div>
 

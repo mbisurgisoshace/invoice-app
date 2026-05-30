@@ -89,7 +89,8 @@ export async function DashboardBlocks() {
                 {`${data.length}`}
               </p>
               <p className="text-xs text-muted-foreground">
-                Total invoices issued
+                {/* Total invoices issued */}
+                Based on the last 30 days
               </p>
             </div>
             <div

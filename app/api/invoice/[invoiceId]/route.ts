@@ -42,6 +42,7 @@ export async function GET(
       items: true,
       discount: true,
       discountType: true,
+      amountPaid: true,
     },
   });
 
@@ -152,9 +153,10 @@ export async function GET(
 
     if (index === paginatedItems.length - 1) {
       // Discount Section
+      let summaryOffset = 0;
+
       if (data.discountType) {
         pdf.text(`Subtotal Before Discount`, 110, y + 10);
-
         pdf.text(
           formatCurrency(Number(subtotal), data.currency as any),
           160,
@@ -166,7 +168,6 @@ export async function GET(
           110,
           y + 20,
         );
-
         pdf.text(
           formatCurrency(
             Number(
@@ -183,22 +184,45 @@ export async function GET(
         );
 
         pdf.setFont("helvetica", "bold");
-
         pdf.text(`Total After Discount`, 110, y + 30);
-
         pdf.text(
           formatCurrency(Number(data.total), data.currency as any),
           160,
           y + 30,
         );
+
+        summaryOffset = 30;
+      }
+
+      if (Number(data.amountPaid) > 0) {
+        pdf.setFont("helvetica", "normal");
+        pdf.text(`Amount Paid`, 110, y + summaryOffset + 10);
+        pdf.text(
+          formatCurrency(Number(data.amountPaid), data.currency as any),
+          160,
+          y + summaryOffset + 10,
+        );
+
+        pdf.setFont("helvetica", "bold");
+        pdf.text(`Balance Due`, 110, y + summaryOffset + 20);
+        pdf.text(
+          formatCurrency(
+            Number(data.total) - Number(data.amountPaid),
+            data.currency as any,
+          ),
+          160,
+          y + summaryOffset + 20,
+        );
+
+        summaryOffset += 20;
       }
 
       // Notes Section
       if (data.note) {
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(10);
-        pdf.text("Note:", 20, y + 20);
-        pdf.text(data.note, 20, y + 25);
+        pdf.text("Note:", 20, y + summaryOffset + 10);
+        pdf.text(data.note, 20, y + summaryOffset + 15);
       }
     }
 

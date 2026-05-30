@@ -62,10 +62,14 @@ export async function createInvoice(prevState: any, formData: FormData) {
       fromName: submission.value.fromName,
       invoiceName: submission.value.invoiceName,
       invoiceNumber: submission.value.invoiceNumber,
-      status: submission.value.status,
+      status:
+        (submission.value.amountPaid ?? 0) >= submission.value.total
+          ? "PAID"
+          : submission.value.status,
       total: submission.value.total,
       discountType: submission.value.discountType,
       discount: submission.value.discount,
+      amountPaid: submission.value.amountPaid ?? 0,
       note: submission.value.note,
       userId: session.user?.id,
       invoiceCode: submission.value.invoiceCode,
@@ -130,10 +134,14 @@ export async function updateInvoice(prevState: any, formData: FormData) {
       fromName: submission.value.fromName,
       invoiceName: submission.value.invoiceName,
       invoiceNumber: submission.value.invoiceNumber,
-      status: submission.value.status,
+      status:
+        (submission.value.amountPaid ?? 0) >= submission.value.total
+          ? "PAID"
+          : submission.value.status,
       total: submission.value.total,
       discountType: submission.value.discountType || null,
       discount: submission.value.discount || 0,
+      amountPaid: submission.value.amountPaid ?? 0,
       note: submission.value.note,
       userId: session.user?.id,
       invoiceCode: submission.value.invoiceCode,

@@ -136,6 +136,7 @@ model Invoice {
   invoiceCode   String        @default("")
   invoiceNumber Int
   note          String?
+  amountPaid    Decimal       @default(0)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   items         InvoiceItem[]
