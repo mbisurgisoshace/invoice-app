@@ -139,13 +139,32 @@ export function CreateInvoiceForm({
   };
 
   const onImportData = (importedData: ImportedData[]) => {
+    // Keep previously added/imported items, dropping empty placeholder rows
+    const existingItems = fields.items
+      .getFieldList()
+      .map((item) => item.getFieldset())
+      .map(({ description, quantity, rate }) => ({
+        description: description.value || "",
+        quantity: quantity.value || "0",
+        rate: rate.value || "0",
+      }))
+      .filter(
+        (item) =>
+          item.description.trim() ||
+          parseFloat(item.quantity) ||
+          parseFloat(item.rate),
+      );
+
     form.update({
       name: fields.items.name,
-      value: importedData.map((data) => ({
-        description: data.description,
-        quantity: data.quantity,
-        rate: 0,
-      })),
+      value: [
+        ...existingItems,
+        ...importedData.map((data) => ({
+          description: data.description,
+          quantity: data.quantity,
+          rate: 0,
+        })),
+      ],
     });
   };
 
