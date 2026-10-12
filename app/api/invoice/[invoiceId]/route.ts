@@ -39,6 +39,7 @@ export async function GET(
       dueDate: true,
       total: true,
       note: true,
+      noteLabel: true,
       items: true,
       discount: true,
       discountType: true,
@@ -221,7 +222,7 @@ export async function GET(
       if (data.note) {
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(10);
-        pdf.text("Note:", 20, y + summaryOffset + 10);
+        pdf.text(`${data.noteLabel || "Note"}:`, 20, y + summaryOffset + 10);
         pdf.text(data.note, 20, y + summaryOffset + 15);
       }
     }

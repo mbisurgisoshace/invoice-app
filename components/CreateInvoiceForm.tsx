@@ -9,7 +9,7 @@ import {
 } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { useActionState, useState } from "react";
-import { CalendarIcon, MinusIcon, XIcon } from "lucide-react";
+import { CalendarIcon, MinusIcon, PencilIcon, XIcon } from "lucide-react";
 
 import {
   Select,
@@ -666,7 +666,17 @@ export function CreateInvoiceForm({
           </div>
 
           <div>
-            <Label>Note</Label>
+            <div className="group flex items-center gap-1 mb-1">
+              <Input
+                key={fields.noteLabel.key}
+                name={fields.noteLabel.name}
+                defaultValue={fields.noteLabel.initialValue || "Note"}
+                aria-label="Notes label"
+                title="Click to rename this label"
+                className="h-7 w-auto max-w-xs px-3 font-medium border-transparent shadow-none hover:border-input"
+              />
+              <PencilIcon className="size-3 text-muted-foreground opacity-0 group-hover:opacity-100" />
+            </div>
             <Textarea
               key={fields.note.key}
               name={fields.note.name}
