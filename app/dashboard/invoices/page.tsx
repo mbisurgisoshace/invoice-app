@@ -26,6 +26,10 @@ function formatPayments(inv: {
     balance,
     pendingAmount: formatCurrency(balance, inv.currency as any),
     hasPayments: inv.payments.length > 0,
+    advance:
+      Number(inv.amountPaid) > 0
+        ? formatCurrency(Number(inv.amountPaid), inv.currency as any)
+        : null,
     payments: inv.payments.map((payment) => ({
       id: payment.id,
       note: payment.note,
