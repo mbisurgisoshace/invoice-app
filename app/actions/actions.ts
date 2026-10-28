@@ -12,7 +12,7 @@ import {
   onboardingSchema,
   updateInvoiceSchema,
 } from "../utils/schemas";
-import { formatCurrency } from "../utils/utils";
+import { formatCurrency, getInvoiceBalance } from "../utils/utils";
 import { revalidatePath } from "next/cache";
 
 export async function onboardUser(prevState: any, formData: FormData) {
@@ -155,6 +155,8 @@ export async function updateInvoice(prevState: any, formData: FormData) {
     },
   });
 
+  await syncInvoiceStatus(data.id);
+
   const sender = {
     email: "hello@invoicely.dev",
     name: submission.value.fromName,
@@ -201,19 +203,96 @@ export async function markInvoiceAsPaid(
 ) {
   const session = await requireUser();
 
-  const data = await prisma.invoice.update({
+  const invoice = await prisma.invoice.findUniqueOrThrow({
     where: {
       id: invoiceId,
       userId: session.user?.id,
     },
-    data: {
-      status: "PAID",
-      payedDate: paymentDate,
-    },
+    include: { payments: true },
   });
+
+  const balance = getInvoiceBalance(invoice);
+
+  if (balance > 0) {
+    await prisma.invoicePayment.create({
+      data: { invoiceId, amount: balance, date: paymentDate },
+    });
+  }
+
+  await syncInvoiceStatus(invoiceId);
 
   revalidatePath("/dashboard/invoices");
   //return redirect("/dashboard/invoices");
+}
+
+export async function addInvoicePayment(
+  invoiceId: string,
+  amount: number,
+  paymentDate: string,
+  note?: string,
+) {
+  const session = await requireUser();
+
+  if (!(amount > 0)) {
+    throw new Error("Payment amount must be greater than 0");
+  }
+
+  await prisma.invoice.findUniqueOrThrow({
+    where: {
+      id: invoiceId,
+      userId: session.user?.id,
+    },
+  });
+
+  await prisma.invoicePayment.create({
+    data: {
+      invoiceId,
+      amount,
+      date: paymentDate,
+      note: note?.trim() || null,
+    },
+  });
+
+  await syncInvoiceStatus(invoiceId);
+
+  revalidatePath("/dashboard/invoices");
+}
+
+export async function deleteInvoicePayment(paymentId: string) {
+  const session = await requireUser();
+
+  const payment = await prisma.invoicePayment.findFirstOrThrow({
+    where: {
+      id: paymentId,
+      Invoice: { userId: session.user?.id },
+    },
+  });
+
+  await prisma.invoicePayment.delete({ where: { id: payment.id } });
+
+  await syncInvoiceStatus(payment.invoiceId);
+
+  revalidatePath("/dashboard/invoices");
+}
+
+// Status is derived: PAID once the advance plus recorded payments cover the total.
+async function syncInvoiceStatus(invoiceId: string) {
+  const invoice = await prisma.invoice.findUniqueOrThrow({
+    where: { id: invoiceId },
+    include: { payments: { orderBy: { date: "desc" } } },
+  });
+
+  const isPaid = getInvoiceBalance(invoice) <= 0;
+
+  await prisma.invoice.update({
+    where: { id: invoiceId },
+    data: {
+      status: isPaid ? "PAID" : "PENDING",
+      payedDate: isPaid
+        ? (invoice.payments[0]?.date ?? invoice.payedDate ?? new Date())
+        : null,
+    },
+  });
 }
 
 export async function getLastInvoiceNumber() {

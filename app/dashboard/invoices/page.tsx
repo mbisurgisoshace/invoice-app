@@ -1,12 +1,41 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/app/utils/db";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/app/utils/hooks";
 import { InvoicesTable } from "@/components/InvoiceTable";
-import { formatCurrency } from "@/app/utils/utils";
+import { formatCurrency, getInvoiceBalance } from "@/app/utils/utils";
 import { DashboardLayout } from "@/components/AppLayout";
+
+function formatPayments(inv: {
+  total: Prisma.Decimal;
+  currency: string;
+  amountPaid: Prisma.Decimal;
+  payments: {
+    id: string;
+    amount: Prisma.Decimal;
+    date: Date;
+    note: string | null;
+  }[];
+}) {
+  const balance = Math.max(getInvoiceBalance(inv), 0);
+
+  return {
+    balance,
+    pendingAmount: formatCurrency(balance, inv.currency as any),
+    hasPayments: inv.payments.length > 0,
+    payments: inv.payments.map((payment) => ({
+      id: payment.id,
+      note: payment.note,
+      amount: formatCurrency(Number(payment.amount), inv.currency as any),
+      date: new Intl.DateTimeFormat("en-US", {
+        dateStyle: "medium",
+      }).format(payment.date),
+    })),
+  };
+}
 
 export default async function Invoices() {
   const session = await requireUser();
@@ -25,6 +54,11 @@ export default async function Invoices() {
       clientName: true,
       invoiceCode: true,
       invoiceNumber: true,
+      amountPaid: true,
+      payments: {
+        select: { id: true, amount: true, date: true, note: true },
+        orderBy: { date: "asc" },
+      },
     },
     orderBy: {
       createdAt: "desc",
@@ -46,6 +80,11 @@ export default async function Invoices() {
       clientName: true,
       invoiceCode: true,
       invoiceNumber: true,
+      amountPaid: true,
+      payments: {
+        select: { id: true, amount: true, date: true, note: true },
+        orderBy: { date: "asc" },
+      },
     },
     orderBy: {
       createdAt: "desc",
@@ -61,6 +100,7 @@ export default async function Invoices() {
       dateStyle: "medium",
     }).format(inv.date),
     invoiceNumber: `${inv.invoiceCode} ${inv.invoiceNumber}`,
+    ...formatPayments(inv),
   }));
 
   const formattedReceivedInvoices = receivedInvoices.map((inv) => ({
@@ -72,6 +112,7 @@ export default async function Invoices() {
       dateStyle: "medium",
     }).format(inv.date),
     invoiceNumber: `${inv.invoiceCode} ${inv.invoiceNumber}`,
+    ...formatPayments(inv),
   }));
 
   return (

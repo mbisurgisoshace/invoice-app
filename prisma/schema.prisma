@@ -115,13 +115,13 @@ enum DiscountType {
 }
 
 model Invoice {
-  id            String        @id @default(uuid())
+  id            String           @id @default(uuid())
   customerId    String?
   userId        String?
   invoiceName   String
   total         Decimal
   discountType  DiscountType?
-  discount      Decimal       @default(0)
+  discount      Decimal          @default(0)
   status        InvoiceStatus
   date          DateTime
   dueDate       Int
@@ -133,16 +133,17 @@ model Invoice {
   clientEmail   String
   clientAddress String?
   currency      String
-  invoiceCode   String        @default("")
+  invoiceCode   String           @default("")
   invoiceNumber Int
   note          String?
-  noteLabel     String        @default("Note")
-  amountPaid    Decimal       @default(0)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  noteLabel     String           @default("Note")
+  amountPaid    Decimal          @default(0)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
   items         InvoiceItem[]
-  user          User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  customer      Customer?     @relation(fields: [customerId], references: [id])
+  payments      InvoicePayment[]
+  user          User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customer      Customer?        @relation(fields: [customerId], references: [id])
 }
 
 model InvoiceItem {
@@ -154,4 +155,15 @@ model InvoiceItem {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   Invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model InvoicePayment {
+  id        String   @id @default(cuid())
+  invoiceId String
+  amount    Decimal
+  date      DateTime
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 }

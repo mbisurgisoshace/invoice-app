@@ -4,7 +4,7 @@ import { SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Badge } from "./ui/badge";
-import InvoiceTableActions from "./InvoiceTableActions";
+import InvoiceTableActions, { InvoicePayment } from "./InvoiceTableActions";
 
 type Invoice = {
   id: string;
@@ -13,6 +13,10 @@ type Invoice = {
   invoiceName: string;
   invoiceNumber: string;
   status: "PAID" | "PENDING";
+  balance: number;
+  pendingAmount: string;
+  hasPayments: boolean;
+  payments: InvoicePayment[];
 };
 
 interface InvoicesTableProps {
@@ -108,6 +112,9 @@ export function InvoicesTable({
                     </div>
                   </th>
                   <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                    Pending
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                     Status
                   </th>
                   <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
@@ -147,6 +154,9 @@ export function InvoicesTable({
                     <td className="p-4 align-middle font-medium tabular-nums text-foreground">
                       {invoice.amount}
                     </td>
+                    <td className="p-4 align-middle tabular-nums text-muted-foreground">
+                      {invoice.status === "PAID" ? "—" : invoice.pendingAmount}
+                    </td>
                     <td className="p-4 align-middle">
                       <Badge
                         className={`border-0 px-2.5 py-0.5 text-[11px] font-medium ${
@@ -155,7 +165,11 @@ export function InvoicesTable({
                             : "bg-warning/10 text-warning hover:bg-warning/15"
                         }`}
                       >
-                        {invoice.status === "PAID" ? "Paid" : "Pending"}
+                        {invoice.status === "PAID"
+                          ? "Paid"
+                          : invoice.hasPayments
+                            ? "Partially paid"
+                            : "Pending"}
                       </Badge>
                     </td>
                     <td className="p-4 align-middle text-muted-foreground">
@@ -165,6 +179,8 @@ export function InvoicesTable({
                       <InvoiceTableActions
                         invoiceId={invoice.id}
                         status={invoice.status}
+                        balance={invoice.balance}
+                        payments={invoice.payments}
                         invoiceOwner={activeTab === "sent"}
                       />
                     </td>

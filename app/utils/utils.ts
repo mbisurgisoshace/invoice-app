@@ -42,3 +42,19 @@ export function calculateDiscountValue(
   }
   return 0;
 }
+
+type Amount = number | string | { toString(): string };
+
+export function getInvoiceBalance(invoice: {
+  total: Amount;
+  amountPaid: Amount;
+  payments: { amount: Amount }[];
+}) {
+  const paid = invoice.payments.reduce(
+    (acc, payment) => acc + Number(payment.amount),
+    Number(invoice.amountPaid),
+  );
+
+  // Round to cents to avoid floating point leftovers like 0.0000001
+  return Math.round((Number(invoice.total) - paid) * 100) / 100;
+}
