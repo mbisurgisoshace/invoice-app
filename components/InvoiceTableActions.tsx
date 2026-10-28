@@ -1,5 +1,6 @@
 import {
   MailIcon,
+  SendIcon,
   PencilIcon,
   Trash2Icon,
   DownloadIcon,
@@ -43,6 +44,7 @@ import {
 import { Input } from "./ui/input";
 import {
   deleteInvoice,
+  resendInvoice,
   markInvoiceAsPaid,
   addInvoicePayment,
   deleteInvoicePayment,
@@ -87,6 +89,8 @@ export default function InvoiceTableActions({
       fetch(`/api/email/${invoiceId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+      }).then((res) => {
+        if (!res.ok) throw new Error("Failed to send reminder email");
       }),
       {
         loading: "Sending reminder email...",
@@ -94,6 +98,14 @@ export default function InvoiceTableActions({
         error: "Failed to send reminder email",
       },
     );
+  };
+
+  const handleResendInvoice = () => {
+    toast.promise(resendInvoice(invoiceId), {
+      loading: "Sending invoice email...",
+      success: "Invoice email sent successfully!",
+      error: "Failed to send invoice email",
+    });
   };
 
   const onDeleteInvoice = async () => {
@@ -162,6 +174,12 @@ export default function InvoiceTableActions({
               Download Invoice
             </Link>
           </DropdownMenuItem>
+          {invoiceOwner && (
+            <DropdownMenuItem onClick={handleResendInvoice}>
+              <SendIcon className="mr-2 h-4 w-4" />
+              Resend Invoice
+            </DropdownMenuItem>
+          )}
           {invoiceOwner && (
             <DropdownMenuItem onClick={handleSentReminder}>
               <MailIcon className="mr-2 h-4 w-4" />

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/app/utils/db";
 import { requireUser } from "@/app/utils/hooks";
 import { emailClient } from "@/app/utils/mailtrap";
+import { formatCurrency } from "@/app/utils/utils";
 
 export async function POST(
   request: Request,
@@ -22,19 +23,21 @@ export async function POST(
         id: invoiceId,
         userId: session.user?.id,
       },
+      include: { customer: { select: { email: true } } },
     });
 
     if (!data)
       return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
 
     const sender = {
-      email: "hello@demomailtrap.com",
-      name: "Maximiliano Bisurgi",
+      email: "hello@invoicely.dev",
+      name: data.fromName,
     };
 
-    emailClient.send({
+    await emailClient.send({
       from: sender,
-      to: [{ email: "maximiliano.bisurgi@gmail.com" }],
+      // Customer's current email; the invoice's copy may be outdated.
+      to: [{ email: data.customer?.email || data.clientEmail }],
       template_uuid: process.env.SEND_REMINDER_TEMPLATE_ID!,
       template_variables: {
         first_name: data.clientName,
@@ -43,11 +46,19 @@ export async function POST(
         company_info_city: "Orlando",
         company_info_zip_code: "10036",
         company_info_country: "USA",
+        clientName: data.clientName,
+        invoiceNumber: `# ${data.invoiceNumber}`,
+        dueDate: new Intl.DateTimeFormat("en-US", {
+          dateStyle: "medium",
+        }).format(new Date(data.date)),
+        total: formatCurrency(Number(data.total), data.currency as any),
+        invoiceLink: `${process.env.BASE_URL}/api/invoice/${data.id}`,
       },
     });
 
     return NextResponse.json({ success: true });
   } catch (err) {
+    console.error("Failed to send reminder email", err);
     return NextResponse.json(
       { error: "Failed to send Email remainder" },
       { status: 500 }

@@ -5,7 +5,7 @@ import { parseWithZod } from "@conform-to/zod";
 
 import { prisma } from "../utils/db";
 import { requireUser } from "../utils/hooks";
-import { emailClient } from "../utils/mailtrap";
+import { emailClient, sendEmail } from "../utils/mailtrap";
 import {
   createCustomerSchema,
   createInvoiceSchema,
@@ -86,7 +86,7 @@ export async function createInvoice(prevState: any, formData: FormData) {
     name: submission.value.fromName,
   };
 
-  emailClient.send({
+  await sendEmail({
     from: sender,
     to: [{ email: submission.value.clientEmail }],
     template_uuid: process.env.SEND_INVOICE_TEMPLATE_ID!,
@@ -162,7 +162,7 @@ export async function updateInvoice(prevState: any, formData: FormData) {
     name: submission.value.fromName,
   };
 
-  emailClient.send({
+  await sendEmail({
     from: sender,
     to: [{ email: submission.value.clientEmail }],
     template_uuid: process.env.EDIT_INVOICE_TEMPLATE_ID!,
@@ -195,6 +195,35 @@ export async function deleteInvoice(invoiceId: string) {
 
   revalidatePath("/dashboard/invoices");
   //return redirect("/dashboard/invoices");
+}
+
+export async function resendInvoice(invoiceId: string) {
+  const session = await requireUser();
+
+  const data = await prisma.invoice.findUniqueOrThrow({
+    where: {
+      id: invoiceId,
+      userId: session.user?.id,
+    },
+    include: { customer: { select: { email: true } } },
+  });
+
+  // Not using sendEmail: errors should reach the UI since sending is the whole action.
+  await emailClient.send({
+    from: { email: "hello@invoicely.dev", name: data.fromName },
+    // Customer's current email; the invoice's copy may be outdated.
+    to: [{ email: data.customer?.email || data.clientEmail }],
+    template_uuid: process.env.SEND_INVOICE_TEMPLATE_ID!,
+    template_variables: {
+      clientName: data.clientName,
+      invoiceNumber: `# ${data.invoiceNumber}`,
+      dueDate: new Intl.DateTimeFormat("en-US", {
+        dateStyle: "medium",
+      }).format(new Date(data.date)),
+      total: formatCurrency(Number(data.total), data.currency as any),
+      invoiceLink: `${process.env.BASE_URL}/api/invoice/${data.id}`,
+    },
+  });
 }
 
 export async function markInvoiceAsPaid(
